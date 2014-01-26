@@ -11,6 +11,7 @@ To log to a database, a SQL Server install (Express would work)
 ## Sample Output
 
 ![Serial Output](https://raw2.github.com/Ehryk/ArduinoMonitor/master/Documentation/SampleSerial.png)
+&nbsp;&nbsp;
 ![Graph](https://raw2.github.com/Ehryk/ArduinoMonitor/master/Documentation/SampleGraph.png)
 ![Console Application](https://raw2.github.com/Ehryk/ArduinoMonitor/master/Documentation/SampleOutput.png)
 

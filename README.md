@@ -3,10 +3,10 @@ This is a set of tools to output sensor (or other) data from an arduino, graph i
 
 ## General Requirements
 
-To upload the Arduino Sketch, [Arduino IDE](http://arduino.cc/en/main/software)
-To run the Processing Sketch, [Processing](https://processing.org/download/)
-To run the console application, Windows with .NET
-To log to a database, a SQL Server install (Express would work)
+ - To upload the Arduino Sketch, [Arduino IDE](http://arduino.cc/en/main/software)
+ - To run the Processing Sketch, [Processing](https://processing.org/download/)
+ - To run the console application, Windows with .NET
+ - To log to a database, a SQL Server install (Express would work), or a database to connect to
 
 ## Sample Output
 
@@ -22,6 +22,7 @@ To log to a database, a SQL Server install (Express would work)
 1. Upload the Arduino Sketch
 1. Launch the Graph processing sketch to verify operation
 1. Create the Database and tables from the scripts (optional)
+1. Set up the Database connection string (optional)
 1. Run the ArduinoMonitor console application to start logging
 1. Install the ArduinoMonitor as a windows service (optional)
 

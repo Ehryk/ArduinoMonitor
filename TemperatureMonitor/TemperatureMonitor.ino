@@ -1,6 +1,6 @@
 #include "DHT.h"
 
-int sampleRate = 3500; //Milliseconds between sampling
+int sampleRate = 2500; //Milliseconds between sampling
 
 #define DHTPWR 7
 #define DHTGND 4

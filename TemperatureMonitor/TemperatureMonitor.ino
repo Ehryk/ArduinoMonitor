@@ -1,6 +1,7 @@
 #include "DHT.h"
 
 int sampleRate = 2500; //Milliseconds between sampling
+float tCorrection = -9.4;
 
 #define DHTPWR 7 //Power
 #define DHTGND 4 //Ground
@@ -53,6 +54,9 @@ void loop() {
   float tC = dht.readTemperature(); //Read Temperature (in Celsius) from DHT22
   float tF = (lm34/1024.0) * (readVcc() - 500) / 10; //Convert the LM34 analog value to a temperature
   float l = 0; //Light Sensor, future use
+  
+  float tArduino = readTemp()/1000.0 + tCorrection;
+  float vArduino = readVcc()/1000.0;
 
   // check if returns are valid, if they are NaN (not a number) then something went wrong!
   if (isnan(tC) || isnan(h)) {
@@ -79,11 +83,28 @@ void loop() {
     Serial.print("|");
     Serial.print(l);
     Serial.print("|");
-    Serial.print("(Celsius,Fahrenheit,% Humidity,Light)");
+    Serial.print(vArduino);
+    Serial.print("|");
+    Serial.print(tArduino);
+    Serial.print("|");
+    Serial.print("(C,F,%,lm,Vcc,Ci)");
     Serial.println();
   }
   
   delay(sampleRate);
+}
+
+long readTemp() {
+  long result;
+  // Read temperature sensor against 1.1V reference
+  ADMUX = _BV(REFS1) | _BV(REFS0) | _BV(MUX3);
+  delay(2); // Wait for Vref to settle
+  ADCSRA |= _BV(ADSC); // Convert
+  while (bit_is_set(ADCSRA,ADSC));
+  result = ADCL;
+  result |= ADCH<<8;
+  result = (result - 125) * 1075;
+  return result;
 }
 
 long readVcc() {

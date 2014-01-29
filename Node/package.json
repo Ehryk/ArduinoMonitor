@@ -1,0 +1,12 @@
+{
+  "name": "ArduinoMonitor",
+  "description": "Monitors and logs Arduino sensor data via a serial port",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node monitor.js"
+  },
+  "dependencies": {
+    "serialport": "*"
+  }
+}

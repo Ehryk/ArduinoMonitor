@@ -2,9 +2,13 @@
 
 int sampleRate = 2500; //Milliseconds between sampling
 
-#define DHTPWR 7
-#define DHTGND 4
-#define DHTPIN 6     // what pin we're connected to
+#define DHTPWR 7 //Power
+#define DHTGND 4 //Ground
+#define DHTPIN 6 //Data Pin (digital)
+
+#define LM34PWR A0 //Power
+#define LM34GND A2 //Ground
+#define LM34PIN A1 //Data Pin (analog)
 
 // Uncomment whatever type you're using!
 //#define DHTTYPE DHT11   // MDHT 11 
@@ -21,14 +25,19 @@ DHT dht(DHTPIN, DHTTYPE);
 void setup() {
   pinMode(DHTPWR, OUTPUT);
   pinMode(DHTGND, OUTPUT);
-  digitalWrite(DHTPWR, HIGH);
-  digitalWrite(DHTGND, LOW);
+  pinMode(LM34PWR, OUTPUT);
+  pinMode(LM34GND, OUTPUT);
+  pinMode(LM34PIN, INPUT);
   
   Serial.begin(9600); 
   
   Serial.println("TemperatureMonitor");
   Serial.println("v0.2 Eric Menze 1.25.2014");
-  Serial.println("Powering Sensor...");
+  Serial.println("Powering Sensors...");
+  digitalWrite(DHTPWR, HIGH);
+  digitalWrite(DHTGND, LOW);
+  digitalWrite(LM34PWR, HIGH);
+  digitalWrite(LM34GND, LOW);
   delay(2000);
   dht.begin();
   Serial.println("Beginning Read Loop...");
@@ -37,10 +46,13 @@ void setup() {
 void loop() {
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-  float h = dht.readHumidity();
-  float tC = dht.readTemperature();
-  float tF = tC * 9 / 5 + 32;
-  float l = 0;
+  
+  float lm34 = analogRead(LM34PIN); //Read Analog Data from LM34
+  
+  float h = dht.readHumidity(); //Read Humidity from DHT22
+  float tC = dht.readTemperature(); //Read Temperature (in Celsius) from DHT22
+  float tF = (lm34/1024.0) * (readVcc() - 500) / 10; //Convert the LM34 analog value to a temperature
+  float l = 0; //Light Sensor, future use
 
   // check if returns are valid, if they are NaN (not a number) then something went wrong!
   if (isnan(tC) || isnan(h)) {
@@ -72,4 +84,17 @@ void loop() {
   }
   
   delay(sampleRate);
+}
+
+long readVcc() {
+  long result;
+  // Read 1.1V reference against AVcc
+  ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
+  delay(2); // Wait for Vref to settle
+  ADCSRA |= _BV(ADSC); // Convert
+  while (bit_is_set(ADCSRA,ADSC));
+  result = ADCL;
+  result |= ADCH<<8;
+  result = 1126400L / result; // Back-calculate AVcc in mV
+  return result;
 }

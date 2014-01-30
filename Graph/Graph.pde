@@ -24,10 +24,10 @@ void setup()
   font24 = loadFont("Verdana-24.vlw"); 
   
   //set the size of the window
-  size(210, 200);
+  size(290, 200);
   
   //init serial communication port
-  commPort = new Serial(this, "COM4", 9600);
+  commPort = new Serial(this, "COM3", 9600);
   
   //fill tempHistory with default temps
   for(int index = 0; index<100; index++)
@@ -117,6 +117,20 @@ void draw()
   text(String.format("%.1f°C", tempC), 105, 65);
   //tempF = ((tempC*9)/5) + 32;
   text(String.format("%.1f°F", tempF), 105, 37);
+  
+  //write the % humidity
+  stroke(0);
+  fill(0,0,0);
+  textFont(font24); 
+  textAlign(CENTER);
+  text(String.format("%.0f%%", humidity), 250, 50);
+
+  pushMatrix();
+  translate(150, 100);
+  rotate(HALF_PI);
+  text(String.format("Humidity"), 20, -85);
+  popMatrix();
+  
 }
 
 void delay(int delay)

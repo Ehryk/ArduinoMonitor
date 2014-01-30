@@ -1,7 +1,7 @@
 #include "DHT.h"
 
 int sampleRate = 2500; //Milliseconds between sampling
-float tCorrection = -9.4;
+float tCorrection = -14.0;
 
 #define DHTPWR 7 //Power
 #define DHTGND 4 //Ground
@@ -52,10 +52,12 @@ void loop() {
   
   float h = dht.readHumidity(); //Read Humidity from DHT22
   float tC = dht.readTemperature(); //Read Temperature (in Celsius) from DHT22
-  float tF = (lm34/1024.0) * (readVcc() - 500) / 10; //Convert the LM34 analog value to a temperature
+  //float tF = (lm34/1024.0) * (readVcc() - 500) / 10; //Convert the LM34 analog value to a temperature
+  float tF = tC * 9 / 5 + 32;
   float l = 0; //Light Sensor, future use
   
-  float tArduino = readTemp()/1000.0 + tCorrection;
+  //float tArduino = readTemp()/1000.0 + tCorrection;
+  float tArduino = GetTemp() + tCorrection;
   float vArduino = readVcc()/1000.0;
 
   // check if returns are valid, if they are NaN (not a number) then something went wrong!
@@ -118,4 +120,35 @@ long readVcc() {
   result |= ADCH<<8;
   result = 1126400L / result; // Back-calculate AVcc in mV
   return result;
+}
+
+double GetTemp(void)
+{
+  unsigned int wADC;
+  double t;
+
+  // The internal temperature has to be used
+  // with the internal reference of 1.1V.
+  // Channel 8 can not be selected with
+  // the analogRead function yet.
+
+  // Set the internal reference and mux.
+  ADMUX = (_BV(REFS1) | _BV(REFS0) | _BV(MUX3));
+  ADCSRA |= _BV(ADEN);  // enable the ADC
+
+  delay(20);            // wait for voltages to become stable.
+
+  ADCSRA |= _BV(ADSC);  // Start the ADC
+
+  // Detect end-of-conversion
+  while (bit_is_set(ADCSRA,ADSC));
+
+  // Reading register "ADCW" takes care of how to read ADCL and ADCH.
+  wADC = ADCW;
+
+  // The offset of 324.31 could be wrong. It is just an indication.
+  t = (wADC - 324.31 ) / 1.22;
+
+  // The returned temperature is in degrees Celcius.
+  return (t);
 }

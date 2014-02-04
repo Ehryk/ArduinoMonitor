@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
 using System.IO;
 using System.IO.Ports;
 using System.Threading;
@@ -79,18 +75,10 @@ namespace ArduinoMonitor
             Initialize();
 
             //Log Start
-            if (LogToFile)
-                logFile.WriteLine("ArduinoMonitor Started {0:G}", DateTime.Now);
-            if (LogToDatabase)
-                database.InsertEvent(ArduinoID, "ArduinoMonitor Started.", EventType.ApplicationStart);
-            
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine();
-            Console.WriteLine("ArduinoMonitor Started.");
-            Console.ResetColor();
+            LogStatus(String.Format("ArduinoMonitor Started: Arduino {0}.", ArduinoID), EventType.ApplicationStart);
             
             logTimer = new Timer(LogSensorData, null, InitializeWait, LogInterval);
-            checkTimer = new Timer(CheckLow, null, InitializeWait, CheckInterval);
+            checkTimer = new Timer(CheckThreshold, null, InitializeWait, CheckInterval);
 
             return true;
         }
@@ -98,18 +86,10 @@ namespace ArduinoMonitor
         public bool Continue()
         {
             //Log Continue
-            if (LogToFile)
-                logFile.WriteLine("ArduinoMonitor Continued {0:G}", DateTime.Now);
-            if (LogToDatabase)
-                database.InsertEvent(ArduinoID, "ArduinoMonitor Continued.", EventType.ApplicationContinue);
-
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine();
-            Console.WriteLine("ArduinoMonitor Continued.");
-            Console.ResetColor();
+            LogStatus(String.Format("ArduinoMonitor Continued: Arduino {0}.", ArduinoID), EventType.ApplicationContinue);
             
             //logTimer = new Timer(LogToFile, null, initializeWait, logInterval);
-            checkTimer = new Timer(CheckLow, null, InitializeWait, CheckInterval);
+            checkTimer = new Timer(CheckThreshold, null, InitializeWait, CheckInterval);
 
             return true;
         }
@@ -117,15 +97,7 @@ namespace ArduinoMonitor
         public bool Pause()
         {
             //Log Pause
-            if (LogToFile)
-                logFile.WriteLine("ArduinoMonitor Paused {0:G}", DateTime.Now);
-            if (LogToDatabase)
-                database.InsertEvent(ArduinoID, "ArduinoMonitor Paused.", EventType.ApplicationPause);
-
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine();
-            Console.WriteLine("ArduinoMonitor Paused.");
-            Console.ResetColor();
+            LogStatus(String.Format("ArduinoMonitor Paused: Arduino {0}.", ArduinoID), EventType.ApplicationPause);
 
             //logTimer.Dispose();
             checkTimer.Dispose();
@@ -136,15 +108,7 @@ namespace ArduinoMonitor
         public bool Stop()
         {
             //Log Stop
-            if (LogToFile)
-                logFile.WriteLine("ArduinoMonitor Stopped {0:G}", DateTime.Now);
-            if (LogToDatabase)
-                database.InsertEvent(ArduinoID, "ArduinoMonitor Stopped.", EventType.ApplicationStop);
-
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine();
-            Console.WriteLine("ArduinoMonitor Stopped.");
-            Console.ResetColor();
+            LogStatus(String.Format("ArduinoMonitor Stopped: Arduino {0}.", ArduinoID), EventType.ApplicationStop);
 
             logTimer.Dispose();
             checkTimer.Dispose();
@@ -162,9 +126,7 @@ namespace ArduinoMonitor
 
         public void Initialize()
         {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("Initialization Starting...");
-            Console.ResetColor();
+            ConsoleStatus("Initialization Starting...");
 
             database = new SQLServer();
 
@@ -185,7 +147,7 @@ namespace ArduinoMonitor
             
             if (UseConfigurationFile)
             {
-                
+                //Todo: read from app.config
             }
 
             if (LogToFile)
@@ -202,14 +164,7 @@ namespace ArduinoMonitor
             serialPort.Open();
             if (!serialPort.IsOpen)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Cannot open Serial Port COM" + port);
-                Console.ResetColor();
-
-                if (LogToFile)
-                    logFile.WriteLine("Error - Cannot open Serial Port COM" + port);
-                if (LogToDatabase)
-                    database.InsertEvent(ArduinoID, "Cannot open Serial Port on COM" + port, EventType.Error);
+                LogError(String.Format("Cannot open Serial Port COM{0}", port));
 
                 return;
             }
@@ -220,109 +175,96 @@ namespace ArduinoMonitor
             serialPort.DataReceived += DataReceived;
 
             //Successful Initialization
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("Initialization Success!");
-            Console.ResetColor();
-            if (LogToFile)
-                logFile.WriteLine("Initialization Successful {0:G}", DateTime.Now);
-            if (LogToDatabase)
-                database.InsertEvent(ArduinoID, "Initialization Successful.", EventType.Initialized);
+            LogStatus("Initialization Successful", EventType.Initialized);
         }
 
         public void LogSensorData(object state)
         {
-            if (LogToFile)
+            try
             {
-                logFile.Write(String.Format("{0:G}\t{1}°C\t{2}°F\t{3}% Humidity", DateTime.Now, TempCelsius, TempFahrenheit, Humidity));
-                logFile.Write(IsLow ? " - LOW" : "");
-                logFile.Write(IsHigh ? " - HIGH" : "");
-                logFile.WriteLine();
+                if (LogToFile)
+                {
+                    logFile.Write(String.Format("{0:G}\t{1}°C\t{2}°F\t{3}% Humidity", DateTime.Now, TempCelsius, TempFahrenheit, Humidity));
+                    logFile.Write(IsLow ? " - LOW" : "");
+                    logFile.Write(IsHigh ? " - HIGH" : "");
+                    logFile.WriteLine();
+                }
+                if (LogToDatabase)
+                {
+                    database.InsertSensorData(ArduinoID, TempCelsius, TempFahrenheit, Humidity);
+                    if (IsLow) database.InsertEvent(ArduinoID, String.Format("Temperature Below Threshold. Temperature: {0}°F, Threshold {1}°F", TempFahrenheit, LowThreshold), EventType.LowThresholdCrossed);
+                    if (IsHigh) database.InsertEvent(ArduinoID, String.Format("Temperature Above Threshold. Temperature: {0}°F, Threshold {1}°F", TempCelsius, HighThreshold), EventType.HighThresholdCrossed);
+                }
+
+                LastLog = DateTime.Now;
+
+                ConsoleMessage("Wrote Sensor Data: {0:G}", DateTime.Now);
             }
-            if (LogToDatabase)
+            catch (Exception ex)
             {
-                database.InsertSensorData(ArduinoID, TempCelsius, TempFahrenheit, Humidity);
-                if (IsLow) database.InsertEvent(ArduinoID, String.Format("Temperature Below Threshold. Temperature: {0}°F, Threshold {1}°F", TempFahrenheit, LowThreshold), EventType.LowThresholdCrossed);
-                if (IsHigh) database.InsertEvent(ArduinoID, String.Format("Temperature Above Threshold. Temperature: {0}°F, Threshold {1}°F", TempCelsius, HighThreshold), EventType.HighThresholdCrossed);
+                LogError(String.Format("Could not Log Sensor Data: {0}", ex.Message), ex);
             }
-
-            LastLog = DateTime.Now;
-
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Wrote Sensor Data: {0:G}", DateTime.Now);
-            Console.ResetColor();
         }
 
-        public void CheckLow(object state)
+        public void CheckThreshold(object state)
         {
-            if (!IsLow && !IsHigh)
+            try
             {
-                if (HasSentEmail)
+                if (!IsLow && !IsHigh)
                 {
-                    if (Email.SendEmail("Temperature Restored - " + TempFahrenheit + "°F", EmailBody(), "RDI Twin Cities <RDI_TwinCities@resdat.com>", "Eric Menze <emenze@resdat.com>"))
+                    if (HasSentEmail)
                     {
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-                        Console.WriteLine("Restored Email Sent, {1}°F - {0:G}", DateTime.Now, TempFahrenheit);
-                        Console.ResetColor();
+                        if (Email.SendEmail("Temperature Restored - " + TempFahrenheit + "°F", EmailBody(), "RDI Twin Cities <RDI_TwinCities@resdat.com>", "Eric Menze <emenze@resdat.com>"))
+                        {
+                            Console.ForegroundColor = ConsoleColor.Cyan;
 
-                        if (LogToFile)
-                            logFile.WriteLine("Restored Email Sent, {1}°F - {0:G}", DateTime.Now, TempFahrenheit);
-                        if (LogToDatabase)
-                            database.InsertEvent(ArduinoID, String.Format("Restored Email Sent, {1}°F - {0:G}", DateTime.Now, TempFahrenheit), EventType.EmailSent);
+                            LogEmailSent(String.Format("Restored Email Sent, {0}°F", TempFahrenheit));
+                        }
+                    }
+
+                    OutOfBounds = null;
+                    HasSentEmail = false;
+                }
+                else if (IsLow)
+                {
+                    OutOfBounds = OutOfBounds ?? DateTime.Now;
+
+                    if (!HasSentEmail && DateTime.Now - OutOfBounds > EmailDelay)
+                    {
+                        if (Email.SendEmail("It's cold - " + TempFahrenheit + "°F!", EmailBody(), "RDI Twin Cities <RDI_TwinCities@resdat.com>", "Eric Menze <emenze@resdat.com>"))
+                        {
+                            HasSentEmail = true;
+
+                            LogEmailSent(String.Format("Low Email Sent, {0}°F", TempFahrenheit));
+                        }
+                        else if (!RetryEmailOnFailure)
+                        {
+                            HasSentEmail = true;
+                        }
                     }
                 }
+                else if (IsHigh)
+                {
+                    OutOfBounds = OutOfBounds ?? DateTime.Now;
 
-                OutOfBounds = null;
-                HasSentEmail = false;
+                    if (!HasSentEmail && DateTime.Now - OutOfBounds > EmailDelay)
+                    {
+                        if (Email.SendEmail("It's hot - " + TempFahrenheit + "°F!", EmailBody(), "RDI Twin Cities <RDI_TwinCities@resdat.com>", "Eric Menze <emenze@resdat.com>"))
+                        {
+                            HasSentEmail = true;
+
+                            LogEmailSent(String.Format("High Email Sent, {0}°F", TempFahrenheit));
+                        }
+                        else if (!RetryEmailOnFailure)
+                        {
+                            HasSentEmail = true;
+                        }
+                    }
+                }
             }
-            else if (IsLow)
+            catch (Exception ex)
             {
-                OutOfBounds = OutOfBounds ?? DateTime.Now;
-
-                if (!HasSentEmail && DateTime.Now - OutOfBounds > EmailDelay)
-                {
-                    if (Email.SendEmail("It's cold - " + TempFahrenheit + "°F!", EmailBody(), "RDI Twin Cities <RDI_TwinCities@resdat.com>", "Eric Menze <emenze@resdat.com>"))
-                    {
-                        HasSentEmail = true;
-
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-                        Console.WriteLine("Low Email Sent, {1}°F - {0:G}", DateTime.Now, TempFahrenheit);
-                        Console.ResetColor();
-
-                        if (LogToFile)
-                            logFile.WriteLine("Low Email Sent, {1}°F - {0:G}", DateTime.Now, TempFahrenheit);
-                        if (LogToDatabase)
-                            database.InsertEvent(ArduinoID, String.Format("Low Email Sent, {1}°F - {0:G}", DateTime.Now, TempFahrenheit), EventType.EmailSent);
-                    }
-                    else if (!RetryEmailOnFailure)
-                    {
-                        HasSentEmail = true;
-                    }
-                }
-            }
-            else if (IsHigh)
-            {
-                OutOfBounds = OutOfBounds ?? DateTime.Now;
-
-                if (!HasSentEmail && DateTime.Now - OutOfBounds > EmailDelay)
-                {
-                    if (Email.SendEmail("It's hot - " + TempFahrenheit + "°F!", EmailBody(), "RDI Twin Cities <RDI_TwinCities@resdat.com>", "Eric Menze <emenze@resdat.com>"))
-                    {
-                        HasSentEmail = true;
-
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-                        Console.WriteLine("High Email Sent, {1}°F - {0:G}", DateTime.Now, TempFahrenheit);
-                        Console.ResetColor();
-
-                        if (LogToFile)
-                            logFile.WriteLine("High Email Sent, {1}°F - {0:G}", DateTime.Now, TempFahrenheit);
-                        if (LogToDatabase)
-                            database.InsertEvent(ArduinoID, String.Format("High Email Sent, {1}°F - {0:G}", DateTime.Now, TempFahrenheit), EventType.EmailSent);
-                    }
-                    else if (!RetryEmailOnFailure)
-                    {
-                        HasSentEmail = true;
-                    }
-                }
+                LogError(String.Format("Checking Threshold: {0}", ex.Message), ex);
             }
         }
 
@@ -373,18 +315,101 @@ namespace ArduinoMonitor
 
         private void DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            string line = serialPort.ReadLine();
+            string line = null;
 
             try
             {
-                ProcessLine(line);
+                line = serialPort.ReadLine();
             }
             catch (Exception ex)
             {
+                LogError(String.Format("Could not read from Serial Port: {0}", ex.Message), ex);
+            }
+
+            if (line == null) return;
+
+            try
+            {
+                bool containedData = ProcessLine(line);
+            }
+            catch (Exception ex)
+            {
+                LogError(String.Format("Could not process line <{0}>: {1}", line, ex.Message), ex);
+            }
+        }
+
+        #endregion
+
+        #region Console and Logging
+
+        private void ConsoleDefault(string pMessage, params Object[] args)
+        {
+            ConsoleWrite(null, pMessage, args);
+        }
+
+        private void ConsoleMessage(string pMessage, params Object[] args)
+        {
+            ConsoleWrite(ConsoleColor.Green, pMessage, args);
+        }
+
+        private void ConsoleStatus(string pMessage, params Object[] args)
+        {
+            ConsoleWrite(ConsoleColor.Yellow, pMessage, args);
+        }
+
+        private void ConsoleWrite(ConsoleColor? color, string pMessage, params Object[] args)
+        {
+            if (color == null)
+                Console.ResetColor();
+            else
+                Console.ForegroundColor = color.Value;
+            Console.WriteLine(pMessage, args);
+            Console.ResetColor();
+        }
+
+        private void LogError(string pMessage, Exception pException = null, int? pArduinoID = null)
+        {
+            Log(pMessage, EventType.Error, pArduinoID, ConsoleColor.Red, pException);
+        }
+
+        private void LogEmailSent(string pMessage, int? pArduinoID = null)
+        {
+            Log(pMessage, EventType.EmailSent, pArduinoID, ConsoleColor.Cyan);
+        }
+
+        private void LogEmailFailed(string pMessage, Exception pException = null, int? pArduinoID = null)
+        {
+            Log(pMessage, EventType.EmailFailure, pArduinoID, ConsoleColor.Red, pException);
+        }
+
+        private void LogStatus(string pMessage, EventType pEventType, int? pArduinoID = null)
+        {
+            Log(pMessage, pEventType, pArduinoID, ConsoleColor.Yellow);
+        }
+
+        private void Log(string pMessage, EventType pEventType, int? pArduinoID = null, ConsoleColor color = ConsoleColor.White, Exception pException = null, DateTime? pDate = null, string pSource = "ArduinoMonitor")
+        {
+            try
+            {
+                Console.ForegroundColor = color;
+                Console.WriteLine(pMessage);
+                Console.ResetColor();
+
                 if (LogToFile)
-                    logFile.WriteLine("Error - Could not process line '{0}'", line);
+                    logFile.WriteLine("{0}{1} - {2:G}", pException == null ? "" : "Error - ", pMessage, pDate ?? DateTime.Now);
                 if (LogToDatabase)
-                    database.InsertEvent(ArduinoID, String.Format("Could Not Process Input: <{0}>", line), EventType.Error, true, ex.Message, ex.StackTrace);
+                {
+                    if (pException == null)
+                        database.InsertEvent(pArduinoID ?? ArduinoID, pMessage, pEventType, false, null, null, pDate ?? DateTime.Now, pSource);
+                    else
+                        database.InsertEvent(pArduinoID ?? ArduinoID, pMessage, pEventType, true, pException.Message, pException.StackTrace, pDate ?? DateTime.Now, pSource);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Could not log error: {0}", ex.Message);
+                Console.ResetColor();
             }
         }
 

@@ -6,15 +6,6 @@ namespace ArduinoMonitor
     public class Email
     {
         /// <summary>
-        /// Sends an email
-        /// </summary>
-        /// <param name="tempFahrenheit">Temperature, in Fahrenheit</param>
-        public static bool SendEmail(float tempFahrenheit)
-        {
-            return SendEmail("It's Cold - " + tempFahrenheit + "°F", "Brrrrr", "", "");
-        }
-
-        /// <summary>
         /// Sends an email - attachment is not required
         /// </summary>
         /// <param name="subject">subject line text</param>
@@ -24,7 +15,7 @@ namespace ArduinoMonitor
         public static bool SendEmail(string subject, string body, string recipientEmailAddress, string fromEmailAddress)
         {
             //The smtp server used to send the email is in the web.config
-            SmtpClient client = new SmtpClient("localhost", 25);
+            SmtpClient client = new SmtpClient("smtp2.resdat.com", 25);
 
             MailMessage msg = new MailMessage
             {

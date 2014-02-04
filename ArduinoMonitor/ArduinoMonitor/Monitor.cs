@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Configuration;
 using System.IO;
 using System.IO.Ports;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
+using System.Xml;
 using ArduinoMonitor.DataAccess;
 
 namespace ArduinoMonitor
@@ -18,6 +22,16 @@ namespace ArduinoMonitor
         private Timer logTimer;   //Writes to the enabled logs (file, db)
         private Timer checkTimer; //Checks that the temperature is within bounds
 
+        private static readonly System.Reflection.Assembly currentAssembly = Assembly.GetAssembly(typeof(Monitor));
+        private static readonly string assemblyFile = currentAssembly.Location;
+        private static readonly string assemblyDirectory = Path.GetDirectoryName(currentAssembly.Location);
+        private string[] configPaths = new string[] { String.Format("{0}.config", assemblyFile), String.Format("{0}{1}app.config", assemblyDirectory, Path.DirectorySeparatorChar), "app.config" };
+        private string configFile;
+
+        private XmlDocument configXML = new XmlDocument();
+        private ConnectionStringSettingsCollection connectionStrings = new ConnectionStringSettingsCollection();
+        private KeyValueConfigurationCollection appSettings = new KeyValueConfigurationCollection();
+
         //Public
         public int ArduinoID; //Database ID of the connected Arduino
 
@@ -30,6 +44,7 @@ namespace ArduinoMonitor
         public DateTime LastLog;      //Last Log Write
         public DateTime? OutOfBounds; //Time when the temperature crossed the threshold
 
+        public bool EnableEmail;         //Enable or Disable sending of Email
         public bool RetryEmailOnFailure; //If sending fails, retry until success or return to bounds?
         public bool LogToFile;           //Enables writing to the log file
         public bool LogToDatabase;       //Enables logging to the database
@@ -42,10 +57,10 @@ namespace ArduinoMonitor
         
         public float LowThreshold;  //Temperature considered 'low', in Fahrenheit
         public float HighThreshold; //Temperature considered 'high', in Fahrenheit
-        public TimeSpan EmailDelay; //How Long it must be low before an email will be sent, in minutes
+        public TimeSpan EmailHysteresis; //How Long it must be low before an email will be sent, in minutes
         public bool HasSentEmail;   //If an email has already been sent for current out-of-bounds
         public string Recipients = "";
-        
+
         //Computed
         public bool IsLow
         {
@@ -129,6 +144,7 @@ namespace ArduinoMonitor
             ConsoleStatus("Initialization Starting...");
 
             database = new SQLServer();
+            string logPath = "ArduinoMonitor.log";
 
             //Set Application Defaults
             ArduinoID = 1;
@@ -139,21 +155,54 @@ namespace ArduinoMonitor
 
             LowThreshold = 62;
             HighThreshold = 80;
-            EmailDelay = new TimeSpan(0, 5, 0);
+            EmailHysteresis = new TimeSpan(0, 5, 0);
 
-            string port = "4";
-            string portName = "COM" + port;
+            string portName = "COM4";
             int portBaud = 9600;
             
-            if (UseConfigurationFile)
+            if (UseConfigurationFile && LoadConfigurationFile())
             {
-                //Todo: read from app.config
+                try
+                {
+                    ArduinoID = int.Parse(appSettings["Arduino_ID"].Value);
+                    database.ConnectionString = connectionStrings["ArduinoMonitor"].ConnectionString;
+
+                    //COM Port
+                    portName = appSettings["COM_Port"].Value;
+                    portBaud = int.Parse(appSettings["COM_BaudRate"].Value);
+                    SendDTR = bool.Parse(appSettings["COM_SendDTR"].Value);
+
+                    //Logging
+                    LogToDatabase = bool.Parse(appSettings["Log_ToDatabase"].Value);
+                    LogToFile = bool.Parse(appSettings["Log_ToFile"].Value);
+                    logPath = appSettings["Log_FileName"].Value;
+                    LogInterval = new TimeSpan(0, 0, int.Parse(appSettings["Log_Interval_s"].Value));
+                    InitializeWait = new TimeSpan(0, 0, int.Parse(appSettings["Log_Initialize_Wait_s"].Value));
+
+                    //Threshold
+                    CheckInterval = new TimeSpan(0, 0, int.Parse(appSettings["Check_Interval_s"].Value));
+                    LowThreshold = float.Parse(appSettings["Low_Threshold"].Value);
+                    HighThreshold = float.Parse(appSettings["High_Threshold"].Value);
+
+                    //Email
+                    EnableEmail = bool.Parse(appSettings["Email_Enable"].Value);
+                    Email.FromAddress = appSettings["Email_From"].Value;
+                    Email.SMTPServer = appSettings["Email_SMTP_Server"].Value;
+                    Email.SMTPPort = int.Parse(appSettings["Email_SMTP_Port"].Value);
+                    Recipients = appSettings["Email_Recipients"].Value;
+                    EmailHysteresis = new TimeSpan(0, int.Parse(appSettings["Email_Hysteresis_m"].Value), 0);
+                    RetryEmailOnFailure = bool.Parse(appSettings["Email_RetryOnFailure"].Value);
+                }
+                catch (Exception ex)
+                {
+                    ConsoleError("Could not load configuration settings: {0}", ex.Message);
+                }
             }
 
             if (LogToFile)
             {
                 //Open and Configure Log File
-                logFile = File.AppendText("ArduinoMonitor.log");
+                logFile = File.AppendText(logPath);
                 logFile.AutoFlush = true;
             }
 
@@ -164,7 +213,7 @@ namespace ArduinoMonitor
             serialPort.Open();
             if (!serialPort.IsOpen)
             {
-                LogError(String.Format("Cannot open Serial Port COM{0}", port));
+                LogError(String.Format("Cannot open Serial Port {0}", portName));
 
                 return;
             }
@@ -176,6 +225,56 @@ namespace ArduinoMonitor
 
             //Successful Initialization
             LogStatus("Initialization Successful", EventType.Initialized);
+        }
+
+        public bool LoadConfigurationFile()
+        {
+            foreach (string path in configPaths.Where(File.Exists))
+            {
+                configFile = path;
+                break;
+            }
+
+            FileStream fs = new FileStream(configFile, FileMode.Open);
+            try
+            {
+                configXML.Load(fs);
+            }
+            catch (Exception ex)
+            {
+                ConsoleError("Could Not Read Configuration File: {0} ({1})", configFile, ex.Message);
+                return false;
+            }
+            finally
+            {
+                fs.Close();
+            }
+
+            try
+            {
+                XmlNode node = configXML.GetElementsByTagName("appSettings")[0];
+                XmlNodeList nodeList = node.SelectNodes("add");
+
+                foreach (XmlNode row in nodeList)
+                {
+                    appSettings.Add(new KeyValueConfigurationElement(row.Attributes["key"].Value, row.Attributes["value"].Value));
+                }
+
+                node = configXML.GetElementsByTagName("connectionStrings")[0];
+                nodeList = node.SelectNodes("add");
+
+                foreach (XmlNode row in nodeList)
+                {
+                    connectionStrings.Add(new ConnectionStringSettings(row.Attributes["name"].Value, row.Attributes["connectionString"].Value));
+                }
+            }
+            catch (Exception ex)
+            {
+                ConsoleError("Configuration File {0} could not be parsed to XML", configFile);
+                return false;
+            }
+
+            return true;
         }
 
         public void LogSensorData(object state)
@@ -212,7 +311,7 @@ namespace ArduinoMonitor
             {
                 if (!IsLow && !IsHigh)
                 {
-                    if (HasSentEmail)
+                    if (EnableEmail && HasSentEmail)
                     {
                         if (Email.SendEmail("Temperature Restored - " + TempFahrenheit + "°F", EmailBody(), "RDI Twin Cities <RDI_TwinCities@resdat.com>", "Eric Menze <emenze@resdat.com>"))
                         {
@@ -229,7 +328,7 @@ namespace ArduinoMonitor
                 {
                     OutOfBounds = OutOfBounds ?? DateTime.Now;
 
-                    if (!HasSentEmail && DateTime.Now - OutOfBounds > EmailDelay)
+                    if (EnableEmail && HasSentEmail && DateTime.Now - OutOfBounds > EmailHysteresis)
                     {
                         if (Email.SendEmail("It's cold - " + TempFahrenheit + "°F!", EmailBody(), "RDI Twin Cities <RDI_TwinCities@resdat.com>", "Eric Menze <emenze@resdat.com>"))
                         {
@@ -247,7 +346,7 @@ namespace ArduinoMonitor
                 {
                     OutOfBounds = OutOfBounds ?? DateTime.Now;
 
-                    if (!HasSentEmail && DateTime.Now - OutOfBounds > EmailDelay)
+                    if (EnableEmail && !HasSentEmail && DateTime.Now - OutOfBounds > EmailHysteresis)
                     {
                         if (Email.SendEmail("It's hot - " + TempFahrenheit + "°F!", EmailBody(), "RDI Twin Cities <RDI_TwinCities@resdat.com>", "Eric Menze <emenze@resdat.com>"))
                         {
@@ -355,6 +454,11 @@ namespace ArduinoMonitor
         private void ConsoleStatus(string pMessage, params Object[] args)
         {
             ConsoleWrite(ConsoleColor.Yellow, pMessage, args);
+        }
+
+        private void ConsoleError(string pMessage, params Object[] args)
+        {
+            ConsoleWrite(ConsoleColor.Red, pMessage, args);
         }
 
         private void ConsoleWrite(ConsoleColor? color, string pMessage, params Object[] args)

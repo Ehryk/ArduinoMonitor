@@ -154,7 +154,7 @@ namespace ArduinoMonitor.DataAccess
 
         #region Sensor Data
 
-        public int InsertSensorData(int pArduinoID, float? pTempCelsius, float? pTempFahrenheit, float? pHumidity, float? pLight = null, DateTime? pDate = null)
+        public int InsertSensorData(int pArduinoID, decimal? pTempCelsius, decimal? pTempFahrenheit, decimal? pHumidity, decimal? pLight = null, DateTime? pDate = null)
         {
             List<SqlParameter> parameters = new List<SqlParameter>();
             

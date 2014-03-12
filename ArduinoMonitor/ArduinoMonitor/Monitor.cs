@@ -35,10 +35,12 @@ namespace ArduinoMonitor
         //Public
         public int ArduinoID; //Database ID of the connected Arduino
 
-        public float TempCelsius;    //Last Celsius Reading
-        public float TempFahrenheit; //Last Fahrenheit Reading
-        public float Humidity;       //Last Humidity Sensor Reading
-        public float Light;          //Last Light Sensor Reading
+        public decimal TempCelsius;    //Last Celsius Reading
+        public decimal TempFahrenheit; //Last Fahrenheit Reading
+        public decimal Humidity;       //Last Humidity Sensor Reading
+        public decimal Light;          //Last Light Sensor Reading
+        public decimal Voltage;        //Last Arduino Voltage Reading
+        public decimal TempInternalC;  //Last Arduino Internal Temperature Sensor Reading (inaccurate)
 
         public DateTime LastUpdate;   //Last Update from the Arduino
         public DateTime LastLog;      //Last Log Write
@@ -55,8 +57,8 @@ namespace ArduinoMonitor
         public TimeSpan LogInterval    = new TimeSpan(0, 1, 0);  //Time in between log writes
         public TimeSpan CheckInterval  = new TimeSpan(0, 0, 10); //Time in between bounds checks
         
-        public float LowThreshold;  //Temperature considered 'low', in Fahrenheit
-        public float HighThreshold; //Temperature considered 'high', in Fahrenheit
+        public decimal LowThreshold;  //Temperature considered 'low', in Fahrenheit
+        public decimal HighThreshold; //Temperature considered 'high', in Fahrenheit
         public TimeSpan EmailHysteresis; //How Long it must be low before an email will be sent, in minutes
         public bool HasSentEmail;   //If an email has already been sent for current out-of-bounds
         public string Recipients = "";
@@ -181,8 +183,8 @@ namespace ArduinoMonitor
 
                     //Threshold
                     CheckInterval = new TimeSpan(0, 0, int.Parse(appSettings["Check_Interval_s"].Value));
-                    LowThreshold = float.Parse(appSettings["Low_Threshold"].Value);
-                    HighThreshold = float.Parse(appSettings["High_Threshold"].Value);
+                    LowThreshold = decimal.Parse(appSettings["Low_Threshold"].Value);
+                    HighThreshold = decimal.Parse(appSettings["High_Threshold"].Value);
 
                     //Email
                     EnableEmail = bool.Parse(appSettings["Email_Enable"].Value);
@@ -290,7 +292,7 @@ namespace ArduinoMonitor
                 }
                 if (LogToDatabase)
                 {
-                    database.InsertSensorData(ArduinoID, TempCelsius, TempFahrenheit, Humidity);
+                    database.InsertSensorData(ArduinoID, TempCelsius, TempFahrenheit, Humidity, Light);
                     if (IsLow) database.InsertEvent(ArduinoID, String.Format("Temperature Below Threshold. Temperature: {0}°F, Threshold {1}°F", TempFahrenheit, LowThreshold), EventType.LowThresholdCrossed);
                     if (IsHigh) database.InsertEvent(ArduinoID, String.Format("Temperature Above Threshold. Temperature: {0}°F, Threshold {1}°F", TempCelsius, HighThreshold), EventType.HighThresholdCrossed);
                 }
@@ -378,10 +380,12 @@ namespace ArduinoMonitor
                 containsData = true;
 
                 String[] values = line.Split('|');
-                TempCelsius = float.Parse(values[0]);
-                TempFahrenheit = float.Parse(values[1]);
-                Humidity = float.Parse(values[2]);
-                Light = float.Parse(values[3]);
+                TempCelsius = decimal.Parse(values[0]);
+                TempFahrenheit = decimal.Parse(values[1]);
+                Humidity = decimal.Parse(values[2]);
+                Light = decimal.Parse(values[3]);
+                Voltage = decimal.Parse(values[4]);
+                TempInternalC = decimal.Parse(values[5]);
 
                 LastUpdate = DateTime.Now;
 

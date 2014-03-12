@@ -1,6 +1,7 @@
 #include "DHT.h"
 
 int sampleRate = 2500; //Milliseconds between sampling
+bool debug = false;
 float tCorrection = -14.0;
 
 #define DHTPWR 7 //Power
@@ -10,6 +11,8 @@ float tCorrection = -14.0;
 #define LM34PWR A0 //Power
 #define LM34GND A2 //Ground
 #define LM34PIN A1 //Data Pin (analog)
+
+#define LIGHTPIN A4 //Data Pin (analog)
 
 // Uncomment whatever type you're using!
 //#define DHTTYPE DHT11   // MDHT 11 
@@ -29,6 +32,7 @@ void setup() {
   pinMode(LM34PWR, OUTPUT);
   pinMode(LM34GND, OUTPUT);
   pinMode(LM34PIN, INPUT);
+  pinMode(LIGHTPIN, INPUT);
   
   Serial.begin(9600); 
   
@@ -49,12 +53,13 @@ void loop() {
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
   
   float lm34 = analogRead(LM34PIN); //Read Analog Data from LM34
+  float light = analogRead(LIGHTPIN); //Read Analog Data from Light Sensor
   
   float h = dht.readHumidity(); //Read Humidity from DHT22
   float tC = dht.readTemperature(); //Read Temperature (in Celsius) from DHT22
   //float tF = (lm34/1024.0) * (readVcc() - 500) / 10; //Convert the LM34 analog value to a temperature
   float tF = tC * 9 / 5 + 32;
-  float l = 0; //Light Sensor, future use
+  float l = (1024 - light) / 1024 * 100; //Light Sensor, future use
   
   //float tArduino = readTemp()/1000.0 + tCorrection;
   float tArduino = GetTemp() + tCorrection;
@@ -62,35 +67,45 @@ void loop() {
 
   // check if returns are valid, if they are NaN (not a number) then something went wrong!
   if (isnan(tC) || isnan(h)) {
-    Serial.println(" - Failed to read from Sensor");
+    Serial.println(" - Failed to read from Temperature Sensor");
   } else {
-    //Nicely Formatted
-    //Serial.print("Humidity: "); 
-    //Serial.print(h);
-    //Serial.print("%\t");
-    //Serial.print("Temperature: ");
-    //Serial.print(tF);
-    //Serial.write(176);
-    //Serial.print("F ("); 
-    //Serial.print(tC);
-    //Serial.write(176);
-    //Serial.print("C)");
-    
-    //Delimited by |
-    Serial.print(tC);
-    Serial.print("|");
-    Serial.print(tF);
-    Serial.print("|");
-    Serial.print(h);
-    Serial.print("|");
-    Serial.print(l);
-    Serial.print("|");
-    Serial.print(vArduino);
-    Serial.print("|");
-    Serial.print(tArduino);
-    Serial.print("|");
-    Serial.print("(C,F,%,lm,Vcc,Ci)");
-    Serial.println();
+    if (debug) {
+      //Nicely Formatted
+      Serial.print("Temperature: ");
+      Serial.print(tF);
+      Serial.write(176);
+      Serial.print("F ("); 
+      Serial.print(tC);
+      Serial.write(176);
+      Serial.println("C)");
+      
+      Serial.print("Humidity: "); 
+      Serial.print(h);
+      Serial.println("%");
+      
+      Serial.print("Light: ");
+      Serial.print(l);
+      Serial.println("%");
+      
+      Serial.println();
+    }
+    else {
+      //Delimited by |
+      Serial.print(tC);
+      Serial.print("|");
+      Serial.print(tF);
+      Serial.print("|");
+      Serial.print(h);
+      Serial.print("|");
+      Serial.print(l);
+      Serial.print("|");
+      Serial.print(vArduino);
+      Serial.print("|");
+      Serial.print(tArduino);
+      Serial.print("|");
+      Serial.print("(C,F,%,lux,Vcc,Ci)");
+      Serial.println();
+    }
   }
   
   delay(sampleRate);

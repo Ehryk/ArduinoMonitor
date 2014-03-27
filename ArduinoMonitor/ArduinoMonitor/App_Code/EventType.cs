@@ -12,12 +12,17 @@ namespace ArduinoMonitor
         ApplicationStop,
         ApplicationPause,
         ApplicationContinue,
+        ConfigurationChanged,
+
         LowThresholdCrossed,
         HighThresholdCrossed,
         NormalityRestored,
+
         EmailSent,
         EmailFailure,
+
         ReadFailure,
+
         Error
     }
 }

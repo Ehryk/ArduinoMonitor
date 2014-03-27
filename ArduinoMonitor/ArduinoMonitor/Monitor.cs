@@ -32,8 +32,10 @@ namespace ArduinoMonitor
         private ConnectionStringSettingsCollection connectionStrings = new ConnectionStringSettingsCollection();
         private KeyValueConfigurationCollection appSettings = new KeyValueConfigurationCollection();
 
+        private FileSystemWatcher watcher;
+
         //Public
-        public int ArduinoID; //Database ID of the connected Arduino
+        public int ArduinoID;          //Database ID of the connected Arduino
 
         public decimal TempCelsius;    //Last Celsius Reading
         public decimal TempFahrenheit; //Last Fahrenheit Reading
@@ -42,26 +44,28 @@ namespace ArduinoMonitor
         public decimal Voltage;        //Last Arduino Voltage Reading
         public decimal TempInternalC;  //Last Arduino Internal Temperature Sensor Reading (inaccurate)
 
-        public DateTime LastUpdate;   //Last Update from the Arduino
-        public DateTime LastLog;      //Last Log Write
-        public DateTime? OutOfBounds; //Time when the temperature crossed the threshold
+        public DateTime LastUpdate;    //Last Update from the Arduino
+        public DateTime LastLog;       //Last Log Write
+        public DateTime? OutOfBounds;  //Time when the temperature crossed the threshold
 
-        public bool EnableEmail;         //Enable or Disable sending of Email
-        public bool RetryEmailOnFailure; //If sending fails, retry until success or return to bounds?
-        public bool LogToFile;           //Enables writing to the log file
-        public bool LogToDatabase;       //Enables logging to the database
+        public bool EnableEmail;                 //Enable or Disable sending of Email
+        public bool RetryEmailOnFailure;         //If sending fails, retry until success or return to bounds?
+        public bool LogToFile;                   //Enables writing to the log file
+        public bool LogToDatabase;               //Enables logging to the database
         public bool UseConfigurationFile = true; //Enables the configuration file to overwrite application defaults
-        public bool SendDTR = true;      //DTR Resets the Arduino when the Application starts listening
+        public bool SendDTR = true;              //DTR Resets the Arduino when the Application starts listening
 
         public TimeSpan InitializeWait = new TimeSpan(0, 0, 10); //Delay before first log write after initialization
         public TimeSpan LogInterval    = new TimeSpan(0, 1, 0);  //Time in between log writes
         public TimeSpan CheckInterval  = new TimeSpan(0, 0, 10); //Time in between bounds checks
         
-        public decimal LowThreshold;  //Temperature considered 'low', in Fahrenheit
-        public decimal HighThreshold; //Temperature considered 'high', in Fahrenheit
+        public decimal LowThreshold;     //Temperature considered 'low', in Fahrenheit
+        public decimal HighThreshold;    //Temperature considered 'high', in Fahrenheit
         public TimeSpan EmailHysteresis; //How Long it must be low before an email will be sent, in minutes
-        public bool HasSentEmail;   //If an email has already been sent for current out-of-bounds
-        public string Recipients = "";
+        public bool HasSentEmail;        //If an email has already been sent for current out-of-bounds
+        public string Recipients = "";   //Email Recipients
+
+        public bool ConfigurationWatch = false; //Watches the configuration file and restarts when changed
 
         //Computed
         public bool IsLow
@@ -107,6 +111,7 @@ namespace ArduinoMonitor
             
             //logTimer = new Timer(LogToFile, null, initializeWait, logInterval);
             checkTimer = new Timer(CheckThreshold, null, InitializeWait, CheckInterval);
+            watcher.EnableRaisingEvents = true;
 
             return true;
         }
@@ -118,6 +123,7 @@ namespace ArduinoMonitor
 
             //logTimer.Dispose();
             checkTimer.Dispose();
+            watcher.EnableRaisingEvents = false;
 
             return true;
         }
@@ -133,6 +139,8 @@ namespace ArduinoMonitor
             serialPort.Dispose();
             logFile.Dispose();
             database.Dispose();
+
+            watcher.Dispose();
 
             return true;
         }
@@ -194,6 +202,8 @@ namespace ArduinoMonitor
                     Recipients = appSettings["Email_Recipients"].Value;
                     EmailHysteresis = new TimeSpan(0, int.Parse(appSettings["Email_Hysteresis_m"].Value), 0);
                     RetryEmailOnFailure = bool.Parse(appSettings["Email_RetryOnFailure"].Value);
+
+                    ConfigurationWatch = bool.Parse(appSettings["Configuration_Watch"].Value);
                 }
                 catch (Exception ex)
                 {
@@ -206,6 +216,24 @@ namespace ArduinoMonitor
                 //Open and Configure Log File
                 logFile = File.AppendText(logPath);
                 logFile.AutoFlush = true;
+            }
+
+            if (ConfigurationWatch)
+            {
+                // Create a new FileSystemWatcher and set its properties.
+                watcher = new FileSystemWatcher();
+                watcher.Path = configFile;
+                /* Watch for changes in LastAccess and LastWrite times, and 
+                   the renaming of files or directories. */
+                watcher.NotifyFilter = NotifyFilters.LastWrite;
+                // Only watch text files.
+                watcher.Filter = "*.config";
+
+                // Add event handlers.
+                watcher.Changed += ConfigurationChanged;
+
+                // Begin watching.
+                watcher.EnableRaisingEvents = true;
             }
 
             //Configure and Open Serial Port
@@ -434,11 +462,34 @@ namespace ArduinoMonitor
             try
             {
                 bool containedData = ProcessLine(line);
+
+                if (!containedData)
+                    Log(String.Format("Line does not contain data: {0}", line), EventType.ReadFailure, ArduinoID);
             }
             catch (Exception ex)
             {
                 LogError(String.Format("Could not process line <{0}>: {1}", line, ex.Message), ex);
             }
+        }
+
+        private void ConfigurationChanged(object sender, FileSystemEventArgs e)
+        {
+            //Log Configuration Change
+            LogStatus(String.Format("Configuration Changed: Arduino {0}.", ArduinoID), EventType.ConfigurationChanged);
+
+            //Similar to Stop() method
+            logTimer.Dispose();
+            checkTimer.Dispose();
+
+            serialPort.Dispose();
+            logFile.Dispose();
+            database.Dispose();
+
+            //Similar to Start() method
+            Initialize();
+
+            logTimer = new Timer(LogSensorData, null, InitializeWait, LogInterval);
+            checkTimer = new Timer(CheckThreshold, null, InitializeWait, CheckInterval);
         }
 
         #endregion

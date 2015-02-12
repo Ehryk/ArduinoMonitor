@@ -222,7 +222,9 @@ namespace ArduinoMonitor
             {
                 // Create a new FileSystemWatcher and set its properties.
                 watcher = new FileSystemWatcher();
-                watcher.Path = configFile;
+                watcher.Path = Path.GetDirectoryName(configFile);
+                watcher.Filter = Path.GetFileName(configFile);
+
                 /* Watch for changes in LastAccess and LastWrite times, and 
                    the renaming of files or directories. */
                 watcher.NotifyFilter = NotifyFilters.LastWrite;
@@ -300,7 +302,7 @@ namespace ArduinoMonitor
             }
             catch (Exception ex)
             {
-                ConsoleError("Configuration File {0} could not be parsed to XML", configFile);
+                ConsoleError("Configuration File {0} could not be parsed to XML: {1}", configFile, ex.Message);
                 return false;
             }
 

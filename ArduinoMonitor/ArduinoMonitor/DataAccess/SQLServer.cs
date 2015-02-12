@@ -15,7 +15,7 @@ namespace ArduinoMonitor.DataAccess
         protected override bool SetConnectionString()
         {
 #if DEBUG
-            connectionString = "Data Source=localhost;Initial Catalog=ArduinoMonitor;Persist Security Info=False;User ID=ArduinoMonitor;Password=password;";
+            connectionString = AppSettings.ConnectionString;
             return true;
 #endif
             return false;

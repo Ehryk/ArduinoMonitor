@@ -6,14 +6,14 @@ This is a set of tools to output sensor (or other) data from an arduino, graph i
  - To upload the Arduino Sketch, [Arduino IDE](http://arduino.cc/en/main/software)
  - To run the Processing Sketch, [Processing](https://processing.org/download/)
  - To run the console application, Windows with .NET
- - To log to a database, a SQL Server install (Express would work), or a database to connect to
+ - To log to a database, a SQL Server instance (Express would work), or a database to connect to
 
 ### Sample Output
 
-![Serial Output](https://raw2.github.com/Ehryk/ArduinoMonitor/master/Documentation/SampleSerial.png)
+![Serial Output](Documentation/SampleSerial.png)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-![Graph](https://raw2.github.com/Ehryk/ArduinoMonitor/master/Documentation/SampleGraph.png)
-![Console Application](https://raw2.github.com/Ehryk/ArduinoMonitor/master/Documentation/SampleOutput.png)
+![Graph](Documentation/SampleGraph.png)
+![Console Application](Documentation/SampleOutput.png)
 
 ### Setup
 

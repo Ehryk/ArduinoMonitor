@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -12,55 +13,67 @@ namespace ArduinoMonitor.BusinessObjects
 
         public int ID { get; set; }
 
+        [JsonIgnore]
         public int? CreateUser { get; set; }
+        [JsonIgnore]
         public DateTime? CreateDate { get; set; }
+        [JsonIgnore]
         public int? UpdateUser { get; set; }
+        [JsonIgnore]
         public DateTime? UpdateDate { get; set; }
+        [JsonIgnore]
         public int? DeleteUser { get; set; }
+        [JsonIgnore]
         public DateTime? DeleteDate { get; set; }
 
         #endregion
 
         #region Load BaseObject
 
-        protected void LoadBase(IDataReader pDataReader)
+        protected void LoadBase(IDataReader pDataReader, bool pLoadAudit = true)
         {
             ID = ToInt(pDataReader["ID"]);
-            
-            if(ColumnExists(pDataReader, "CreateUser"))
-                CreateUser = ToNullableInt(pDataReader["CreateUser"]);
-            if(ColumnExists(pDataReader, "CreateDate"))
-                CreateDate = ToNullableDateTime(pDataReader["CreateDate"]);
-            
-            if(ColumnExists(pDataReader, "UpdateUser"))
-                UpdateUser = ToNullableInt(pDataReader["UpdateUser"]);
-            if(ColumnExists(pDataReader, "UpdateDate"))
-                UpdateDate = ToNullableDateTime(pDataReader["UpdateDate"]);
-            
-            if(ColumnExists(pDataReader, "DeleteUser"))
-                DeleteUser = ToNullableInt(pDataReader["DeleteUser"]);
-            if(ColumnExists(pDataReader, "DeleteDate"))
-                DeleteDate = ToNullableDateTime(pDataReader["DeleteDate"]);
+
+            if (pLoadAudit)
+            {
+                if (ColumnExists(pDataReader, "CreateUser"))
+                    CreateUser = ToNullableInt(pDataReader["CreateUser"]);
+                if (ColumnExists(pDataReader, "CreateDate"))
+                    CreateDate = ToNullableDateTime(pDataReader["CreateDate"]);
+
+                if (ColumnExists(pDataReader, "UpdateUser"))
+                    UpdateUser = ToNullableInt(pDataReader["UpdateUser"]);
+                if (ColumnExists(pDataReader, "UpdateDate"))
+                    UpdateDate = ToNullableDateTime(pDataReader["UpdateDate"]);
+
+                if (ColumnExists(pDataReader, "DeleteUser"))
+                    DeleteUser = ToNullableInt(pDataReader["DeleteUser"]);
+                if (ColumnExists(pDataReader, "DeleteDate"))
+                    DeleteDate = ToNullableDateTime(pDataReader["DeleteDate"]);
+            }
         }
 
-        protected void Load(DataRow pRow)
+        protected void Load(DataRow pRow, bool pLoadAudit = true)
         {
             ID = ToInt(pRow["ID"]);
-            
-            if(ColumnExists(pRow, "CreateUser"))
-                CreateUser = ToNullableInt(pRow["CreateUser"]);
-            if(ColumnExists(pRow, "CreateDate"))
-                CreateDate = ToNullableDateTime(pRow["CreateDate"]);
-            
-            if(ColumnExists(pRow, "UpdateUser"))
-                UpdateUser = ToNullableInt(pRow["UpdateUser"]);
-            if(ColumnExists(pRow, "UpdateDate"))
-                UpdateDate = ToNullableDateTime(pRow["UpdateDate"]);
-            
-            if(ColumnExists(pRow, "DeleteUser"))
-                DeleteUser = ToNullableInt(pRow["DeleteUser"]);
-            if(ColumnExists(pRow, "DeleteDate"))
-                DeleteDate = ToNullableDateTime(pRow["DeleteDate"]);
+
+            if (pLoadAudit)
+            {
+                if (ColumnExists(pRow, "CreateUser"))
+                    CreateUser = ToNullableInt(pRow["CreateUser"]);
+                if (ColumnExists(pRow, "CreateDate"))
+                    CreateDate = ToNullableDateTime(pRow["CreateDate"]);
+
+                if (ColumnExists(pRow, "UpdateUser"))
+                    UpdateUser = ToNullableInt(pRow["UpdateUser"]);
+                if (ColumnExists(pRow, "UpdateDate"))
+                    UpdateDate = ToNullableDateTime(pRow["UpdateDate"]);
+
+                if (ColumnExists(pRow, "DeleteUser"))
+                    DeleteUser = ToNullableInt(pRow["DeleteUser"]);
+                if (ColumnExists(pRow, "DeleteDate"))
+                    DeleteDate = ToNullableDateTime(pRow["DeleteDate"]);
+            }
         }
 
         #endregion

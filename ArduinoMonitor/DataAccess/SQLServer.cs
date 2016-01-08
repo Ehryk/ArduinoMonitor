@@ -155,6 +155,24 @@ namespace ArduinoMonitor.DataAccess
 
         #region Sensor Data
 
+        public List<SensorData> GetSensorDataLast(int? pCount = null)
+        {
+            List<SqlParameter> parameters = new List<SqlParameter>();
+
+            if (pCount != null)
+                parameters.Add(new SqlParameter("@Points", pCount));
+
+            DataTable dt = CallStoredProcDataTable("SensorDataLast", parameters);
+
+            List<SensorData> data = new List<SensorData>();
+            foreach(DataRow row in dt.Rows)
+            {
+                data.Add(new SensorData(row));
+            }
+
+            return data;
+        }
+
         public int InsertSensorData(int pArduinoID, decimal? pTempCelsius, decimal? pTempFahrenheit, decimal? pHumidity, decimal? pLight = null, DateTime? pDate = null)
         {
             List<SqlParameter> parameters = new List<SqlParameter>();
@@ -190,40 +208,14 @@ namespace ArduinoMonitor.DataAccess
         /// <param name="procName">stored procedure name</param>
         /// <param name="parameters">A dictionary of string key/value pairs.  Can be null.</param>
         /// <returns>A DataTable containing the results of the query.</returns>
-        private DataTable CallStoredProc(string procName, Dictionary<string, string> parameters)
+        private DataTable CallStoredProcDataTable(string procName, List<SqlParameter> parameters = null)
         {
             SqlConnection conn = new SqlConnection(ConnectionString);
 
             SqlCommand cmd = new SqlCommand(procName, conn) { CommandType = CommandType.StoredProcedure };
-
+            
             if (parameters != null)
-            {
-                foreach (KeyValuePair<string, string> kvp in parameters)
-                {
-                    if (kvp.Key[0] == '@')
-                    {
-                        if (kvp.Value == null || kvp.Value == "NULL")
-                        {
-                            cmd.Parameters.AddWithValue(kvp.Key, DBNull.Value);
-                        }
-                        else
-                        {
-                            cmd.Parameters.AddWithValue(kvp.Key, kvp.Value);
-                        }
-                    }
-                    else
-                    {
-                        if (kvp.Value == null || kvp.Value == "NULL")
-                        {
-                            cmd.Parameters.AddWithValue("@" + kvp.Key, DBNull.Value);
-                        }
-                        else
-                        {
-                            cmd.Parameters.AddWithValue("@" + kvp.Key, kvp.Value);
-                        }
-                    }
-                }
-            }
+                cmd.Parameters.AddRange(parameters.ToArray());
 
             DataTable dt = new DataTable();
             SqlDataAdapter da = new SqlDataAdapter(cmd);
@@ -232,7 +224,7 @@ namespace ArduinoMonitor.DataAccess
         }
 
 
-        private int CallStoredProc(string pProcName, List<SqlParameter> parameters)
+        private int CallStoredProc(string pProcName, List<SqlParameter> parameters = null)
         {
             SqlConnection conn = new SqlConnection(ConnectionString);
 

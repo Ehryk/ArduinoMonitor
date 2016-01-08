@@ -15,11 +15,8 @@ namespace ArduinoMonitor.DataAccess
 
         protected override bool SetConnectionString()
         {
-#if DEBUG
             connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["ArduinoMonitor"].ConnectionString;
             return true;
-#endif
-            return false;
         }
 
         private SqlConnection connection;

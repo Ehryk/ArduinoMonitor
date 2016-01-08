@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Configuration;
+using ArduinoMonitor.Extensions;
 
 namespace ArduinoWeb.Controllers
 {
@@ -12,6 +14,7 @@ namespace ArduinoWeb.Controllers
         {
             ViewBag.Title = "Dashboard";
             ViewBag.Count = id.HasValue ? id : 60;
+            ViewBag.TimeZoneOffset = ConfigurationManager.AppSettings["TimeZoneOffset"].ToInt(0);
 
             return View();
         }

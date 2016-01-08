@@ -1,5 +1,7 @@
 ﻿
-<section id="graph"></section>
+<section id="graph">
+
+</section>
 
 <section id="tabledata" style="padding-top:15px;">
     <table id="data" class="display" style="width:100%;">
@@ -50,7 +52,7 @@
                         { data: 'Year', visible: false },
                         {
                             data: 'Date',
-                            render: function (data) { return formatDateNoYear(new Date(data).addHours(6)); }
+                            render: function (data) { return formatDateNoYear(new Date(data).addHours(@ViewBag.TimeZoneOffset)); }
                         },
                         {
                             data: 'TempCelsius',

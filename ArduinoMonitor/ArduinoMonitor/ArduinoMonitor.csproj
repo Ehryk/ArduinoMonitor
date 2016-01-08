@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ArduinoMonitor</RootNamespace>
     <AssemblyName>ArduinoMonitor</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -90,18 +90,6 @@
     <Prefer32Bit>false</Prefer32Bit>
     <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
-  <PropertyGroup>
-    <ManifestCertificateThumbprint>7A6FBC61F7404518DCF9E0F4231198B6D03C51DD</ManifestCertificateThumbprint>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestKeyFile>ArduinoMonitor_TemporaryKey.pfx</ManifestKeyFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <GenerateManifests>false</GenerateManifests>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignManifests>false</SignManifests>
-  </PropertyGroup>
   <PropertyGroup Label="SlowCheetah">
     <SlowCheetahToolsPath>$([System.IO.Path]::GetFullPath( $(MSBuildProjectDirectory)\..\packages\SlowCheetah.2.5.14\tools\))</SlowCheetahToolsPath>
     <SlowCheetah_EnableImportFromNuGet Condition=" '$(SlowCheetah_EnableImportFromNuGet)'=='' ">true</SlowCheetah_EnableImportFromNuGet>
@@ -130,9 +118,6 @@
   <PropertyGroup>
     <TargetZone>LocalIntranet</TargetZone>
   </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -149,19 +134,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppSettings.cs" />
-    <Compile Include="App_Code\ApplicationInfo.cs" />
-    <Compile Include="App_Code\EnumStringValue.cs" />
-    <Compile Include="App_Code\EventType.cs" />
-    <Compile Include="App_Code\Email.cs" />
-    <Compile Include="App_Code\TempUnit.cs" />
-    <Compile Include="BusinessObjects\Arduino.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="BusinessObjects\BaseObject.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DataAccess\BaseData.cs" />
-    <Compile Include="DataAccess\SQLServer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Monitor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -179,7 +151,6 @@
       <IsTransformFile>True</IsTransformFile>
     </None>
     <None Include="packages.config" />
-    <None Include="Properties\app.manifest" />
     <None Include="Properties\SlowCheetah\SlowCheetah.Transforms.targets" />
   </ItemGroup>
   <ItemGroup>
@@ -207,6 +178,21 @@
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BusinessObjects\BusinessObjects.csproj">
+      <Project>{3981d447-2031-4f2f-93c6-0ed8d3523d6e}</Project>
+      <Name>BusinessObjects</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{b79b7515-8420-4641-848a-5cd18a6bf38d}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DataAccess\DataAccess.csproj">
+      <Project>{ab631980-6de8-487c-bd5f-887b8aaf6aa0}</Project>
+      <Name>DataAccess</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SlowCheetahTargets)" Condition="Exists('$(SlowCheetahTargets)')" Label="SlowCheetah" />
   <UsingTask TaskName="CosturaCleanup" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" TaskFactory="CodeTaskFactory">

@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using ArduinoMonitor;
 using ArduinoMonitor.BusinessObjects;
 
 namespace ArduinoMonitor.DataAccess
@@ -15,7 +16,7 @@ namespace ArduinoMonitor.DataAccess
         protected override bool SetConnectionString()
         {
 #if DEBUG
-            connectionString = AppSettings.ConnectionString;
+            connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["ArduinoMonitor"].ConnectionString;
             return true;
 #endif
             return false;

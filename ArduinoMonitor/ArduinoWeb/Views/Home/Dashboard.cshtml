@@ -25,9 +25,15 @@
 @section scripts {
     <script type="text/javascript">
         var currentData = [];
+        var datatable;
+
+        function refreshData() {
+            datatable.ajax.reload();
+            $("label#refreshTime").html(formatDate(new Date()));
+        }
 
         $(document).ready(function () {
-            var datatable = $('#data')
+            datatable = $('#data')
                 .on('xhr.dt', function (e, settings, json, xhr) {
                     currentData = json;
                 })
@@ -65,6 +71,7 @@
                     ],
                     order: [[2, "asc"]]
                 });
+            $('<button id="refresh" onclick="refreshData()" style="margin-left:20px" class="btn btn-primary btn-sm">Refresh</button>').appendTo('div.dataTables_length');
         });
     </script>
 }

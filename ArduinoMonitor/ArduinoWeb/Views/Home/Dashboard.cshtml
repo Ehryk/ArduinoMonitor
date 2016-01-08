@@ -46,10 +46,22 @@
                             data: 'Date',
                             render: function (data) { return formatDateNoYear(new Date(data)); }
                         },
-                        { data: 'TempCelsius' },
-                        { data: 'TempFahrenheit' },
-                        { data: 'Humidity' },
-                        { data: 'Light' }
+                        {
+                            data: 'TempCelsius',
+                            render: function (data) { return isNull(data) ? "--" : data + "°"; }
+                        },
+                        {
+                            data: 'TempFahrenheit',
+                            render: function (data) { return isNull(data) ? "--" : data + "°"; }
+                        },
+                        {
+                            data: 'Humidity',
+                            render: function (data) { return isNull(data) ? "--" : data + "%"; }
+                        },
+                        {
+                            data: 'Light',
+                            render: function (data) { return isNull(data) ? "--" : data + "%"; }
+                        }
                     ],
                     order: [[2, "asc"]]
                 });

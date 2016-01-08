@@ -71,6 +71,13 @@ function pad(n, width, z) {
     return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
 }
 
+function isNull(arg) {
+    if (arg === null || arg === undefined || (typeof arg === 'number' && arg.toString() === 'NaN'))
+        return true;
+    
+    return false;
+}
+
 function coalesce() {
     var i, undefined, arg;
     for (i = 0; i < arguments.length; i++) {

@@ -8,7 +8,8 @@
 *.sln.docstates
 
 # Config Transformations
-app.*.config
+#app.*.config
+#web.*.config
 
 # Build results
 [Dd]ebug/

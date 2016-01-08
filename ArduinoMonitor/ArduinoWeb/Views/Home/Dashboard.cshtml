@@ -50,7 +50,7 @@
                         { data: 'Year', visible: false },
                         {
                             data: 'Date',
-                            render: function (data) { return formatDateNoYear(new Date(data)); }
+                            render: function (data) { return formatDateNoYear(new Date(data).addHours(6)); }
                         },
                         {
                             data: 'TempCelsius',

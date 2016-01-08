@@ -32,7 +32,7 @@ namespace ArduinoWeb
                       "~/Scripts/bootstrap.js",
                       "~/Scripts/respond.js"));
 
-            bundles.Add(new StyleBundle("~/Content/css/DataTables").Include(
+            bundles.Add(new StyleBundle("~/Content/DataTables/css/css").Include(
                       "~/Content/DataTables/css/jquery.dataTables.css"));
 
             bundles.Add(new StyleBundle("~/Content/css").Include(

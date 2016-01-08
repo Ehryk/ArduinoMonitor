@@ -1,24 +1,55 @@
-﻿<div id="myTable">
-    <table id="sensorData" class="display" width="100%">
+﻿
+<section id="graph">
+    
+</section>
+
+<section id="tabledata" style="padding-top:15px;">
+    <table id="data" class="display" style="width:100%;">
         <thead>
-        <tr>
-            <th>ID</th>
-            <th>Date</th>
-            <th>Temp C</th>
-            <th>Temp F</th>
-            <th>Humidity %</th>
-            <th>Light %</th>
-        </tr>
+            <tr>
+                <th>ID</th>
+                <th>Arduino</th>
+                <th>Elapsed Minutes</th>
+                <th>Year</th>
+                <th>Date</th>
+                <th>Celsius</th>
+                <th>Fahrenheit</th>
+                <th>Humidity</th>
+                <th>Light</th>
+            </tr>
         </thead>
         <tbody>
-        <tr>
-        </tr>
         </tbody>
+        <tfoot>
+        </tfoot>
     </table>
-</div>
+</section>
 
-<script type="text/javascript">
-    $(document).ready(function () {
-        $('#sensorData').DataTable();
-    });
-</script>
+@section scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#data').DataTable({
+                processing: true,
+                ajax: {
+                    url: "/api/last/60",
+                    dataSrc : ''
+                },
+                columns: [
+                    { data: 'ID', visible: false },
+                    { data: 'ArduinoID', visible: false },
+                    { data: 'ElapsedMinutes' },
+                    { data: 'Year', visible: false },
+                    {
+                        data: 'Date',
+                        render: function (data) { return formatDateNoYear(new Date(data)); }
+                    },
+                    { data: 'TempCelsius' },
+                    { data: 'TempFahrenheit' },
+                    { data: 'Humidity' },
+                    { data: 'Light' }
+                ],
+                order: [[2, "asc"]]
+            });
+        });
+    </script>
+}

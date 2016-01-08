@@ -16,8 +16,8 @@ namespace ArduinoWeb
 
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
-                routeTemplate: "api/{controller}/{id}",
-                defaults: new { id = RouteParameter.Optional }
+                routeTemplate: "api/{controller}/{count}",
+                defaults: new { count = RouteParameter.Optional }
             );
         }
     }

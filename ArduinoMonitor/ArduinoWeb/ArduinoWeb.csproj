@@ -364,10 +364,6 @@
     <Content Include="Views\Home\API.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BusinessObjects\BusinessObjects.csproj">
-      <Project>{3981d447-2031-4f2f-93c6-0ed8d3523d6e}</Project>
-      <Name>BusinessObjects</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Common\Common.csproj">
       <Project>{b79b7515-8420-4641-848a-5cd18a6bf38d}</Project>
       <Name>Common</Name>

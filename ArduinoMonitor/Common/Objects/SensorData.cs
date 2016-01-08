@@ -6,7 +6,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 
-namespace ArduinoMonitor.BusinessObjects
+namespace ArduinoMonitor.Objects
 {
     public class SensorData : BaseObject
     {
@@ -47,7 +47,7 @@ namespace ArduinoMonitor.BusinessObjects
 
         public SensorData(IDataReader pDataReader)
         {
-            LoadBase(pDataReader, false);
+            base.Load(pDataReader);
 
             ArduinoID = ToInt(pDataReader["Arduino"]);
 
@@ -65,7 +65,7 @@ namespace ArduinoMonitor.BusinessObjects
 
         public SensorData(DataRow pRow)
         {
-            Load(pRow, false);
+            base.Load(pRow);
 
             ArduinoID = ToInt(pRow["Arduino"]);
 

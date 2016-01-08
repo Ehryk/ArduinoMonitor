@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading;
 using System.Xml;
 using ArduinoMonitor.DataAccess;
+using ArduinoMonitor.Utilities;
 
 namespace ArduinoMonitor
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Mail;
 
-namespace ArduinoMonitor
+namespace ArduinoMonitor.Utilities
 {
     public static class Email
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace ArduinoMonitor
+namespace ArduinoMonitor.Utilities
 {
     static public class ApplicationInfo
     {

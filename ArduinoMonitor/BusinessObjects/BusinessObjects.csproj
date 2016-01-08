@@ -44,9 +44,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SensorData.cs" />
-    <Compile Include="Arduino.cs" />
-    <Compile Include="BaseObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

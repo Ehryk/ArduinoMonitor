@@ -6,9 +6,9 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 
-namespace ArduinoMonitor.BusinessObjects
+namespace ArduinoMonitor.Objects
 {
-    public class Arduino : BaseObject
+    public class Arduino : BaseObjectAudit
     {
         #region Properties
         
@@ -44,9 +44,9 @@ namespace ArduinoMonitor.BusinessObjects
             Name = pName;
         }
 
-        public Arduino(IDataReader pDataReader)
+        public Arduino(IDataReader pDataReader, bool pLoadAudit = true)
         {
-            LoadBase(pDataReader);
+            base.Load(pDataReader, pLoadAudit);
             
             Name = pDataReader["Name"].ToString();
             BuildDate = ToNullableDateTime(pDataReader["BuildDate"]);
@@ -59,9 +59,9 @@ namespace ArduinoMonitor.BusinessObjects
             Deleted = ToBool(pDataReader["Deleted"]);
         }
 
-        public Arduino(DataRow pRow)
+        public Arduino(DataRow pRow, bool pLoadAudit = true)
         {
-            Load(pRow);
+            base.Load(pRow, pLoadAudit);
             
             Name = pRow["Name"].ToString();
             BuildDate = ToNullableDateTime(pRow["BuildDate"]);

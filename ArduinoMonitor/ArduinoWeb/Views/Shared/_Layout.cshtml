@@ -21,11 +21,11 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                @Html.ActionLink("Arduino Monitor", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                <a href="/" class="navbar-brand">Arduino Monitor</a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Dashboard", "Index", "Home", new { area = "" }, null)</li>
+                    <li>@Html.ActionLink("Dashboard", "Dashboard", "Home", new { area = "" }, null)</li>
                     <li>@Html.ActionLink("API", "API", "Home", new { area = "" }, null)</li>
                 </ul>
             </div>

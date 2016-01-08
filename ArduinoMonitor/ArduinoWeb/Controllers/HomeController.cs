@@ -8,9 +8,10 @@ namespace ArduinoWeb.Controllers
 {
     public class HomeController : Controller
     {
-        public ActionResult Dashboard()
+        public ActionResult Dashboard(int? id)
         {
             ViewBag.Title = "Dashboard";
+            ViewBag.Count = id.HasValue ? id : 60;
 
             return View();
         }

@@ -4,8 +4,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
-using ArduinoMonitor;
-using ArduinoMonitor.BusinessObjects;
+using ArduinoMonitor.Objects;
 
 namespace ArduinoMonitor.DataAccess
 {
@@ -19,19 +18,11 @@ namespace ArduinoMonitor.DataAccess
             return true;
         }
 
-        private SqlConnection connection;
-
         private SqlConnection Connection
         {
             get
             {
-                if (connection != null && connection.State != ConnectionState.Closed)
-                    return connection;
-
-                connection = new SqlConnection(ConnectionString);
-                connection.Open();
-
-                return connection;
+                return new SqlConnection(ConnectionString);
             }
         }
 
@@ -46,7 +37,7 @@ namespace ArduinoMonitor.DataAccess
 
         public void Dispose()
         {
-            connection.Dispose();
+            //connection.Dispose();
         }
 
         #endregion
@@ -89,7 +80,7 @@ namespace ArduinoMonitor.DataAccess
 
         public int InsertArduino(IEnumerable<SqlParameter> parameters)
         {
-            int newID = RunIntProcedure(ARDUINO_INSERT, parameters.ToArray());
+            int newID = RunIntScalarProcedure(ARDUINO_INSERT, parameters.ToArray());
 
             return newID;
         }
@@ -143,7 +134,7 @@ namespace ArduinoMonitor.DataAccess
 
         public int InsertEvent(IEnumerable<SqlParameter> parameters)
         {
-            int newID = RunIntProcedure(EVENT_INSERT, parameters.ToArray());
+            int newID = RunIntScalarProcedure(EVENT_INSERT, parameters.ToArray());
 
             return newID;
         }
@@ -159,7 +150,7 @@ namespace ArduinoMonitor.DataAccess
             if (pCount != null)
                 parameters.Add(new SqlParameter("@Points", pCount));
 
-            DataTable dt = CallStoredProcDataTable("SensorDataLast", parameters);
+            DataTable dt = RunDataTableProcedure("SensorDataLast", parameters);
 
             List<SensorData> data = new List<SensorData>();
             foreach(DataRow row in dt.Rows)
@@ -188,198 +179,105 @@ namespace ArduinoMonitor.DataAccess
 
         public int InsertSensorData(IEnumerable<SqlParameter> parameters)
         {
-            int newID = RunIntProcedure(SENSOR_DATA_INSERT, parameters.ToArray());
+            int newID = RunIntScalarProcedure(SENSOR_DATA_INSERT, parameters.ToArray());
 
             return newID;
         }
 
         #endregion
 
-        #region Helper Functions
-
-        #region Database Methods
-
-        /// <summary>
-        /// Calls the given stored procedure with the given parameters.  One or more rows are expected back.
-        /// </summary>
-        /// <param name="procName">stored procedure name</param>
-        /// <param name="parameters">A dictionary of string key/value pairs.  Can be null.</param>
-        /// <returns>A DataTable containing the results of the query.</returns>
-        private DataTable CallStoredProcDataTable(string procName, List<SqlParameter> parameters = null)
-        {
-            SqlConnection conn = new SqlConnection(ConnectionString);
-
-            SqlCommand cmd = new SqlCommand(procName, conn) { CommandType = CommandType.StoredProcedure };
-            
-            if (parameters != null)
-                cmd.Parameters.AddRange(parameters.ToArray());
-
-            DataTable dt = new DataTable();
-            SqlDataAdapter da = new SqlDataAdapter(cmd);
-            da.Fill(dt);
-            return dt;
-        }
-
-
-        private int CallStoredProc(string pProcName, List<SqlParameter> parameters = null)
-        {
-            SqlConnection conn = new SqlConnection(ConnectionString);
-
-            SqlCommand cmd = new SqlCommand(pProcName, conn) { CommandType = CommandType.StoredProcedure };
-
-            if (parameters != null)
-                cmd.Parameters.AddRange(parameters.ToArray());
-
-            conn.Open();
-            return cmd.ExecuteNonQuery();
-        }
-
-        private int CallStoredProcWithReturnValue(string procName, Dictionary<string, string> parameters, string returnValueName)
-        {
-            SqlConnection conn = new SqlConnection(ConnectionString);
-
-            SqlCommand cmd = new SqlCommand(procName, conn) { CommandType = CommandType.StoredProcedure };
-
-            if (parameters != null)
-            {
-                foreach (KeyValuePair<string, string> kvp in parameters)
-                {
-                    if (kvp.Key[0] == '@')
-                    {
-                        if (kvp.Value == null || kvp.Value == "NULL")
-                        {
-                            cmd.Parameters.AddWithValue(kvp.Key, DBNull.Value);
-                        }
-                        else
-                        {
-                            cmd.Parameters.AddWithValue(kvp.Key, kvp.Value);
-                        }
-                    }
-                    else
-                    {
-                        if (kvp.Value == null || kvp.Value == "NULL")
-                        {
-                            cmd.Parameters.AddWithValue("@" + kvp.Key, DBNull.Value);
-                        }
-                        else
-                        {
-                            cmd.Parameters.AddWithValue("@" + kvp.Key, kvp.Value);
-                        }
-                    }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(returnValueName))
-            {
-                SqlParameter returnValue = new SqlParameter(returnValueName, DbType.Int32) { Direction = ParameterDirection.ReturnValue };
-
-                cmd.Parameters.Add(returnValue);
-            }
-
-            conn.Open();
-            //cmd.Connection = conn;
-            cmd.ExecuteNonQuery();
-
-            int vValue = 0;
-            if (!string.IsNullOrEmpty(returnValueName)) vValue = Int32.Parse(cmd.Parameters[returnValueName].Value.ToString());
-
-            conn.Close();
-
-            return vValue;
-        }
-        private DataTable CallSQL(string pSQLName, List<SqlParameter> parameters)
-        {
-            SqlConnection conn = new SqlConnection(ConnectionString);
-
-            SqlCommand cmd = new SqlCommand(pSQLName, conn) { CommandType = CommandType.Text };
-
-            if (parameters != null)
-                cmd.Parameters.AddRange(parameters.ToArray());
-
-            DataTable dt = new DataTable();
-            SqlDataAdapter da = new SqlDataAdapter(cmd);
-            da.Fill(dt);
-            return dt;
-        }
-
-
-        #endregion
-
         #region Database Helpers
 
-        protected object RunProcedure(string name, SqlParameter[] parameters)
+        protected object RunScalarProcedure(string name, IEnumerable<SqlParameter> parameters)
         {
-            SqlCommand cmd = new SqlCommand(name, Connection);
-            cmd.CommandType = CommandType.StoredProcedure;
+            using (SqlConnection conn = Connection)
+            {
+                SqlCommand cmd = new SqlCommand(name, conn);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-            cmd.Parameters.AddRange(parameters);
+                cmd.Parameters.AddRange(parameters.ToArray());
 
-            object result = cmd.ExecuteScalar();
-            return result;
+                object result = cmd.ExecuteScalar();
+                return result;
+            }
         }
 
-        protected int RunIntScalarProcedure(string name, SqlParameter[] parameters)
+        protected int RunIntScalarProcedure(string name, IEnumerable<SqlParameter> parameters)
         {
-            SqlCommand cmd = new SqlCommand(name, Connection);
-            cmd.CommandType = CommandType.StoredProcedure;
+            using (SqlConnection conn = Connection)
+            {
+                SqlCommand cmd = new SqlCommand(name, conn);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-            cmd.Parameters.AddRange(parameters);
+                cmd.Parameters.AddRange(parameters.ToArray());
 
-            int result = (int)cmd.ExecuteScalar();
-            return result;
+                int result = (int)cmd.ExecuteScalar();
+                return result;
+            }
         }
 
-        protected int RunIntProcedure(string name, SqlParameter[] parameters)
+        protected int RunReturnProcedure(string name, IEnumerable<SqlParameter> parameters)
         {
-            SqlCommand cmd = new SqlCommand(name, Connection);
-            cmd.CommandType = CommandType.StoredProcedure;
+            using (SqlConnection conn = Connection)
+            {
+                SqlCommand cmd = new SqlCommand(name, conn);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-            cmd.Parameters.AddRange(parameters);
-            
-            SqlParameter returnParameter = new SqlParameter("@ReturnValue", SqlDbType.Int, 4);
-            returnParameter.Direction = ParameterDirection.ReturnValue;
-            cmd.Parameters.Add(returnParameter);
+                cmd.Parameters.AddRange(parameters.ToArray());
 
-            cmd.ExecuteNonQuery();
+                SqlParameter returnParameter = new SqlParameter("@ReturnValue", SqlDbType.Int, 4);
+                returnParameter.Direction = ParameterDirection.ReturnValue;
+                cmd.Parameters.Add(returnParameter);
 
-            int returnvalue = (int)cmd.Parameters["@ReturnValue"].Value;
-            return returnvalue;
+                cmd.ExecuteNonQuery();
+
+                int returnvalue = (int)cmd.Parameters["@ReturnValue"].Value;
+                return returnvalue;
+            }
         }
 
-        protected int RunRowsProcedure(string name, SqlParameter[] parameters)
+        protected int RunRowsProcedure(string name, IEnumerable<SqlParameter> parameters)
         {
-            SqlCommand cmd = new SqlCommand(name, Connection);
-            cmd.CommandType = CommandType.StoredProcedure;
+            using (SqlConnection conn = Connection)
+            {
+                SqlCommand cmd = new SqlCommand(name, conn);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-            cmd.Parameters.AddRange(parameters);
+                cmd.Parameters.AddRange(parameters.ToArray());
 
-            int rows = cmd.ExecuteNonQuery();
-            return rows;
+                int rows = cmd.ExecuteNonQuery();
+                return rows;
+            }
         }
 
-        protected IDataReader RunDataReaderProcedure(string name, SqlParameter[] parameters)
+        protected IDataReader RunDataReaderProcedure(string name, IEnumerable<SqlParameter> parameters)
         {
-            SqlCommand cmd = new SqlCommand(name, Connection);
+            SqlConnection conn = Connection;
+            SqlCommand cmd = new SqlCommand(name, conn);
             cmd.CommandType = CommandType.StoredProcedure;
 
-            cmd.Parameters.AddRange(parameters);
+            cmd.Parameters.AddRange(parameters.ToArray());
 
             return cmd.ExecuteReader();
+            //Caller should dispose of the reader!
         }
 
-        protected DataTable RunDataTableProcedure(string name, SqlParameter[] parameters = null)
+        protected DataTable RunDataTableProcedure(string name, IEnumerable<SqlParameter> parameters = null)
         {
-            DataTable dt = new DataTable();
+            using (SqlConnection conn = Connection)
+            {
+                DataTable dt = new DataTable();
 
-            SqlCommand cmd = new SqlCommand(name, Connection);
-            cmd.CommandType = CommandType.StoredProcedure;
+                SqlCommand cmd = new SqlCommand(name, conn);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-            cmd.Parameters.AddRange(parameters);
-            SqlDataAdapter da = new SqlDataAdapter(cmd);
+                cmd.Parameters.AddRange(parameters.ToArray());
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
 
-            da.Fill(dt);
+                da.Fill(dt);
 
-            return dt;
+                return dt;
+            }
         }
 
         protected SqlParameter NewSqlParameter(string name, object value, DbType? type = null, ParameterDirection direction = ParameterDirection.Input)
@@ -399,25 +297,6 @@ namespace ArduinoMonitor.DataAccess
             parameter.Direction = direction;
             return parameter;
         }
-
-        #endregion
-
-        #region Generic Helpers
-
-        public static DateTime ToDateTime(TimeSpan pTimeSpan)
-        {
-            return new DateTime(1900, 1, 1).Add(pTimeSpan);
-        }
-
-        public static DateTime? ToDateTime(TimeSpan? pTimeSpan)
-        {
-            if (pTimeSpan == null)
-                return null;
-
-            return new DateTime(1900, 1, 1).Add((TimeSpan)pTimeSpan);
-        }
-
-        #endregion
 
         #endregion
     }

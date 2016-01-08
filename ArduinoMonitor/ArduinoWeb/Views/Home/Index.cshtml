@@ -1,7 +1,5 @@
 ﻿
-<section id="graph">
-    
-</section>
+<section id="graph"></section>
 
 <section id="tabledata" style="padding-top:15px;">
     <table id="data" class="display" style="width:100%;">
@@ -18,8 +16,7 @@
                 <th>Light</th>
             </tr>
         </thead>
-        <tbody>
-        </tbody>
+        <tbody></tbody>
         <tfoot>
         </tfoot>
     </table>
@@ -27,29 +24,35 @@
 
 @section scripts {
     <script type="text/javascript">
+        var currentData = [];
+
         $(document).ready(function () {
-            $('#data').DataTable({
-                processing: true,
-                ajax: {
-                    url: "/api/last/60",
-                    dataSrc : ''
-                },
-                columns: [
-                    { data: 'ID', visible: false },
-                    { data: 'ArduinoID', visible: false },
-                    { data: 'ElapsedMinutes' },
-                    { data: 'Year', visible: false },
-                    {
-                        data: 'Date',
-                        render: function (data) { return formatDateNoYear(new Date(data)); }
+            var datatable = $('#data')
+                .on('xhr.dt', function (e, settings, json, xhr) {
+                    currentData = json;
+                })
+                .DataTable({
+                    processing: true,
+                    ajax: {
+                        url: "/api/last/60",
+                        dataSrc: ""
                     },
-                    { data: 'TempCelsius' },
-                    { data: 'TempFahrenheit' },
-                    { data: 'Humidity' },
-                    { data: 'Light' }
-                ],
-                order: [[2, "asc"]]
-            });
+                    columns: [
+                        { data: 'ID', visible: false },
+                        { data: 'ArduinoID', visible: false },
+                        { data: 'ElapsedMinutes' },
+                        { data: 'Year', visible: false },
+                        {
+                            data: 'Date',
+                            render: function (data) { return formatDateNoYear(new Date(data)); }
+                        },
+                        { data: 'TempCelsius' },
+                        { data: 'TempFahrenheit' },
+                        { data: 'Humidity' },
+                        { data: 'Light' }
+                    ],
+                    order: [[2, "asc"]]
+                });
         });
     </script>
 }

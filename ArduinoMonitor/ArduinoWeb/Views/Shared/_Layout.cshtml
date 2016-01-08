@@ -5,6 +5,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>ArduinoMonitor - @ViewBag.Title</title>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
     @Styles.Render("~/Content/css")
     @Styles.Render("~/Content/css/DataTables")
     @Scripts.Render("~/bundles/modernizr")
@@ -23,8 +25,8 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Home", "Index", "Home", new { area = "" }, null)</li>
-                    <li>@Html.ActionLink("API", "Index", "Help", new { area = "" }, null)</li>
+                    <li>@Html.ActionLink("Dashboard", "Index", "Home", new { area = "" }, null)</li>
+                    <li>@Html.ActionLink("API", "API", "Home", new { area = "" }, null)</li>
                 </ul>
             </div>
         </div>
@@ -33,7 +35,7 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>ArduinoMonitor data loaded <label id="refreshTime">@DateTime.Now</label></p>
+            <p>ArduinoMonitor page loaded <label id="refreshTime">@DateTime.Now</label></p>
         </footer>
     </div>
 

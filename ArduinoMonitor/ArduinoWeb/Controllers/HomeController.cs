@@ -10,7 +10,14 @@ namespace ArduinoWeb.Controllers
     {
         public ActionResult Index()
         {
-            ViewBag.Title = "Home";
+            ViewBag.Title = "Dashboard";
+
+            return View();
+        }
+
+        public ActionResult API()
+        {
+            ViewBag.Title = "API";
 
             return View();
         }

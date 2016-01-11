@@ -52,7 +52,7 @@
                         { data: 'Year', visible: false },
                         {
                             data: 'Date',
-                            render: function (data) { return formatDateNoYear(new Date(data).addHours(@ViewBag.TimeZoneOffset)); }
+                            render: function (data) { return formatDateNoYear(new Date(data + "Z").addHours(@ViewBag.TimeZoneOffset)); }
                         },
                         {
                             data: 'TempCelsius',

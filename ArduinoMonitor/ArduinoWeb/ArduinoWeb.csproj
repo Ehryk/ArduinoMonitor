@@ -344,6 +344,7 @@
     <Content Include="Scripts\flot\excanvas.min.js" />
     <Content Include="Scripts\flot\jquery.colorhelpers.js" />
     <Content Include="Scripts\flot\jquery.colorhelpers.min.js" />
+    <Content Include="Scripts\flot\jquery.flot.axislabels.js" />
     <Content Include="Scripts\flot\jquery.flot.canvas.js" />
     <Content Include="Scripts\flot\jquery.flot.canvas.min.js" />
     <Content Include="Scripts\flot\jquery.flot.categories.js" />

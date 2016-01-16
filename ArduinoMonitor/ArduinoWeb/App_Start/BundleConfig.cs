@@ -15,10 +15,11 @@ namespace ArduinoWeb
                         "~/Scripts/DataTables/jquery.dataTables.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/jquery-flot").Include(
-                        "~/Scripts/DataTables/jquery.flot.js",
-                        "~/Scripts/DataTables/jquery.flot.resize.js",
-                        "~/Scripts/DataTables/jquery.flot.time.js",
-                        "~/Scripts/DataTables/jquery.flot.crosshair.js"));
+                        "~/Scripts/flot/jquery.flot.js",
+                        "~/Scripts/flot/jquery.flot.resize.js",
+                        "~/Scripts/flot/jquery.flot.axislabels.js",
+                        "~/Scripts/flot/jquery.flot.time.js",
+                        "~/Scripts/flot/jquery.flot.crosshair.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/utilities").Include(
                         "~/Scripts/utilities.js"));

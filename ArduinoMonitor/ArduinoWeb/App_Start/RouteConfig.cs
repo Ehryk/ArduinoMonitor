@@ -14,6 +14,13 @@ namespace ArduinoWeb
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
             routes.MapRoute(
+                name: "Dashboard",
+                url: "{id}",
+                defaults: new { controller = "Home", action = "Dashboard" },
+                constraints: new { id = @"\d+" }
+            );
+
+            routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "Home", action = "Dashboard", id = UrlParameter.Optional }

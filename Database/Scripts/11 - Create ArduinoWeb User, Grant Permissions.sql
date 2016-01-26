@@ -16,3 +16,12 @@ CREATE USER [ArduinoWeb] FOR LOGIN [ArduinoWeb]
 GO
 
 GRANT EXECUTE ON SensorDataLast to ArduinoWeb
+
+ALTER LOGIN ArduinoWeb WITH DEFAULT_DATABASE = [ArduinoMonitor]
+GO
+
+EXEC sp_change_users_login 'Auto_Fix', 'ArduinoWeb'
+
+exec sp_updatestats
+
+dbcc freeproccache

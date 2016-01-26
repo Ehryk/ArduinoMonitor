@@ -63,7 +63,7 @@
             for (var i = 0; i < sensorData.length; i++) {
                 fData.push([sensorData[i].ElapsedMinutes, sensorData[i].TempFahrenheit]);
                 cData.push([sensorData[i].ElapsedMinutes, sensorData[i].TempCelsius]);
-                hData.push([sensorData[i].ElapsedMinutes, (sensorData[i].Humidity * 100)]);
+                hData.push([sensorData[i].ElapsedMinutes, sensorData[i].Humidity]);
                 lData.push([sensorData[i].ElapsedMinutes, sensorData[i].Light]);
             }
 
@@ -71,13 +71,15 @@
                 {
                     data: hData,
                     label: "Humidity %",
-                    bars: {
-                        show: true,
-                        align: "center",
-                        barWidth: 0.2,
-                        fill: true,
-                        lineWidth: 1
-                    },
+                    lines: { show: true },
+                    points: { show: false },
+                    //bars: {
+                    //    show: true,
+                    //    align: "center",
+                    //    barWidth: 0.2,
+                    //    fill: true,
+                    //    lineWidth: 1
+                    //},
                     yaxis: 2
                 },
                 {
@@ -94,10 +96,10 @@
                 },
                 {
                     data: lData,
-                    label: "Light",
+                    label: "Light %",
                     lines: { show: true },
                     points: { show: false },
-                    yaxis: 3
+                    yaxis: 2
                 }
             ];
 
@@ -125,7 +127,7 @@
                         max: 105
                     }, {
                         position: "right",
-                        axisLabel: "Humidity",
+                        axisLabel: "Humidity / Light",
                         axisLabelFontSizePixels: 12,
                         axisLabelFontFamily: 'Verdana, Arial',
                         tickFormatter: function(v, axis) {
@@ -133,17 +135,6 @@
                         },
                         min: 0,
                         max: 100
-                    },
-                    {
-                        position: "right",
-                        axisLabel: "Light",
-                        axisLabelFontSizePixels: 12,
-                        axisLabelFontFamily: 'Verdana, Arial',
-                        tickFormatter: function(v, axis) {
-                            return v;
-                        },
-                        min: 40,
-                        max: 60
                     }
                 ]
             };
@@ -209,26 +200,11 @@
             });
         }
 
-        function getData() {
-            var data = [
-                { "ElapsedMinutes": 1, "ID": 775723, "Arduino": 1, "Year": 2016, "Date": "2016-01-24 14:03:44.300", "TempCelsius": 20.50, "TempFahrenheit": 68.90, "Humidity": 1.00, "Light": 50.29, "BuildDate": "2014-01-24 00:00:00.000", "Location": "RDI Minneapolis - 901 N. Third St. Suite 350, Minneapolis, MN 55410", "Sensors": "DHT 22 - Celsius Temperature and Humidity, LM34 Fahrenheit Temperature", "Comment": "NULL" },
-                { "ElapsedMinutes": 2, "ID": 775722, "Arduino": 1, "Year": 2016, "Date": "2016-01-24 14:02:44.287", "TempCelsius": 20.40, "TempFahrenheit": 68.72, "Humidity": 1.00, "Light": 50.29, "BuildDate": "2014-01-24 00:00:00.000", "Location": "RDI Minneapolis - 901 N. Third St. Suite 350, Minneapolis, MN 55410", "Sensors": "DHT 22 - Celsius Temperature and Humidity, LM34 Fahrenheit Temperature", "Comment": "NULL" },
-                { "ElapsedMinutes": 3, "ID": 775721, "Arduino": 1, "Year": 2016, "Date": "2016-01-24 14:01:44.273", "TempCelsius": 20.50, "TempFahrenheit": 68.90, "Humidity": 1.00, "Light": 50.29, "BuildDate": "2014-01-24 00:00:00.000", "Location": "RDI Minneapolis - 901 N. Third St. Suite 350, Minneapolis, MN 55410", "Sensors": "DHT 22 - Celsius Temperature and Humidity, LM34 Fahrenheit Temperature", "Comment": "NULL" },
-                { "ElapsedMinutes": 4, "ID": 775720, "Arduino": 1, "Year": 2016, "Date": "2016-01-24 14:00:44.260", "TempCelsius": 20.60, "TempFahrenheit": 69.08, "Humidity": 1.00, "Light": 50.29, "BuildDate": "2014-01-24 00:00:00.000", "Location": "RDI Minneapolis - 901 N. Third St. Suite 350, Minneapolis, MN 55410", "Sensors": "DHT 22 - Celsius Temperature and Humidity, LM34 Fahrenheit Temperature", "Comment": "NULL" },
-                { "ElapsedMinutes": 5, "ID": 775719, "Arduino": 1, "Year": 2016, "Date": "2016-01-24 13:59:44.250", "TempCelsius": 20.70, "TempFahrenheit": 69.26, "Humidity": 1.00, "Light": 50.49, "BuildDate": "2014-01-24 00:00:00.000", "Location": "RDI Minneapolis - 901 N. Third St. Suite 350, Minneapolis, MN 55410", "Sensors": "DHT 22 - Celsius Temperature and Humidity, LM34 Fahrenheit Temperature", "Comment": "NULL" },
-                { "ElapsedMinutes": 6, "ID": 775718, "Arduino": 1, "Year": 2016, "Date": "2016-01-24 13:58:44.240", "TempCelsius": 20.80, "TempFahrenheit": 69.44, "Humidity": 1.00, "Light": 50.49, "BuildDate": "2014-01-24 00:00:00.000", "Location": "RDI Minneapolis - 901 N. Third St. Suite 350, Minneapolis, MN 55410", "Sensors": "DHT 22 - Celsius Temperature and Humidity, LM34 Fahrenheit Temperature", "Comment": "NULL" },
-                { "ElapsedMinutes": 7, "ID": 775717, "Arduino": 1, "Year": 2016, "Date": "2016-01-24 13:57:44.223", "TempCelsius": 20.90, "TempFahrenheit": 69.62, "Humidity": 1.00, "Light": 50.49, "BuildDate": "2014-01-24 00:00:00.000", "Location": "RDI Minneapolis - 901 N. Third St. Suite 350, Minneapolis, MN 55410", "Sensors": "DHT 22 - Celsius Temperature and Humidity, LM34 Fahrenheit Temperature", "Comment": "NULL" },
-                { "ElapsedMinutes": 8, "ID": 775716, "Arduino": 1, "Year": 2016, "Date": "2016-01-24 13:56:44.210", "TempCelsius": 21.00, "TempFahrenheit": 69.80, "Humidity": 1.00, "Light": 50.39, "BuildDate": "2014-01-24 00:00:00.000", "Location": "RDI Minneapolis - 901 N. Third St. Suite 350, Minneapolis, MN 55410", "Sensors": "DHT 22 - Celsius Temperature and Humidity, LM34 Fahrenheit Temperature", "Comment": "NULL" },
-                { "ElapsedMinutes": 9, "ID": 775715, "Arduino": 1, "Year": 2016, "Date": "2016-01-24 13:55:44.183", "TempCelsius": 21.10, "TempFahrenheit": 69.98, "Humidity": 1.00, "Light": 50.20, "BuildDate": "2014-01-24 00:00:00.000", "Location": "RDI Minneapolis - 901 N. Third St. Suite 350, Minneapolis, MN 55410", "Sensors": "DHT 22 - Celsius Temperature and Humidity, LM34 Fahrenheit Temperature", "Comment": "NULL" },
-                { "ElapsedMinutes": 10, "ID": 775714, "Arduino": 1, "Year": 2016, "Date": "2016-01-24 13:54:44.170", "TempCelsius": 21.40, "TempFahrenheit": 70.52, "Humidity": 1.00, "Light": 50.10, "BuildDate": "2014-01-24 00:00:00.000", "Location": "RDI Minneapolis - 901 N. Third St. Suite 350, Minneapolis, MN 55410", "Sensors": "DHT 22 - Celsius Temperature and Humidity, LM34 Fahrenheit Temperature", "Comment": "NULL" }
-            ];
-            return data;
-        }
-
         $(document).ready(function() {
             datatable = $('#data')
                 .on('xhr.dt', function(e, settings, json, xhr) {
                     currentData = json;
+                    updateGraph(currentData);
                 })
                 .DataTable({
                     processing: true,
@@ -265,8 +241,6 @@
                     order: [[2, "asc"]]
                 });
             $('<button id="refresh" onclick="refreshData()" style="margin-left:20px" class="btn btn-primary btn-sm">Refresh</button>').appendTo('div.dataTables_length');
-            currentData = getData();
-            updateGraph(currentData);
         });
     </script>
 }

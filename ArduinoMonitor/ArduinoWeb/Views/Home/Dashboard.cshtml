@@ -125,6 +125,7 @@
                 axisLabels: {
                     show: true
                 },
+                xaxis: {transform: function (v) { return -v; }},
                 yaxes: [
                     {
                         position: "left",
@@ -167,10 +168,19 @@
                 var pos = latestPosition;
 
                 var axes = plot.getAxes();
-                if (pos.x < axes.xaxis.min || pos.x > axes.xaxis.max ||
+                if (-pos.x < axes.xaxis.min || -pos.x > axes.xaxis.max ||
                     pos.y < axes.yaxis.min || pos.y > axes.yaxis.max) {
                     return;
                 }
+                
+                pos.x = Math.abs(pos.x);
+
+                //if (pos.x > 0) return;
+                //alert("Elapsed Minutes: {0}".format(pos.x));
+
+                var elapsed = parseInt(pos.x);
+                var date = new Date(new Date() - elapsed * 1000 * 60);
+                $("#hover-data").children().find("td").eq(0).text(formatDateNoYear(date));
 
                 var i, j, dataset = plot.getData();
                 for (i = 0; i < dataset.length; ++i) {
@@ -261,6 +271,6 @@
             $('<button id="refresh6" onclick="refreshData(360)" style="margin-left:20px" class="btn btn-primary btn-sm">6 hours</button>').appendTo('div.dataTables_length');
             $('<button id="refresh24" onclick="refreshData(1440)" style="margin-left:20px" class="btn btn-primary btn-sm">1 day</button>').appendTo('div.dataTables_length');
             $('<button id="refresh48" onclick="refreshData(2880)" style="margin-left:20px" class="btn btn-primary btn-sm">2 days</button>').appendTo('div.dataTables_length');
-        });
+        }); 
     </script>
 }

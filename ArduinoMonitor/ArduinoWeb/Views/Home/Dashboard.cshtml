@@ -61,10 +61,10 @@
         function refreshData(min) {
             if (min !== undefined)
                 window.minutes = min;
-            var fData = [];
-            var cData = [];
-            var hData = [];
-            var lData = [];
+            fData = [];
+            cData = [];
+            hData = [];
+            lData = [];
             datatable.ajax.url("/api/last/" + minutes);
             datatable.ajax.reload();
             $("label#refreshTime").html(formatDate(new Date()));

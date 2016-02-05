@@ -19,6 +19,10 @@ Date.prototype.addHours = function (h) {
     return this;
 }
 
+Number.prototype.clamp = function (min, max) {
+    return Math.min(Math.max(this, min), max);
+};
+
 function isTrue(value) {
     if (typeof (value) == 'string') {
         value = value.toLowerCase();

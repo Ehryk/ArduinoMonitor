@@ -201,10 +201,10 @@
             var light = currentData[index].Light;
 
             $("#hover-data").children().find("td").eq(0).text(formatDateNoYear(date));
-            $("#hover-data").children().find("td").eq(1).text(humidity.toFixed(2) + '%');
-            $("#hover-data").children().find("td").eq(2).text(fahrenheit.toFixed(2) + '°');
-            $("#hover-data").children().find("td").eq(3).text(celsius.toFixed(2) + '°');
-            $("#hover-data").children().find("td").eq(4).text(light.toFixed(2) + '%');
+            $("#hover-data").children().find("td").eq(1).text(isNull(humidity) ? "--" : humidity.toFixed(2) + '%');
+            $("#hover-data").children().find("td").eq(2).text(isNull(fahrenheit) ? "--" : fahrenheit.toFixed(2) + '°');
+            $("#hover-data").children().find("td").eq(3).text(isNull(celsius) ? "--" : celsius.toFixed(2) + '°');
+            $("#hover-data").children().find("td").eq(4).text(isNull(light) ? "--" : light.toFixed(2) + '%');
         }
 
         function clearLegend() {

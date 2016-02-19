@@ -55,11 +55,19 @@ namespace ArduinoMonitor.DataAccess
         private const string EVENT_INSERT = "EventInsert";
         private const string EVENT_UPDATE = "EventUpdate";
         private const string EVENT_DELETE = "EventDelete";
-        
+
+        private const string EVENTS_LAST = "EventsLast";
+        private const string EVENTS_RECENT = "EventsRecent";
+
         private const string SENSOR_DATA_GET    = "SensorDataGet";
         private const string SENSOR_DATA_INSERT = "SensorDataInsert";
         private const string SENSOR_DATA_UPDATE = "SensorDataUpdate";
         private const string SENSOR_DATA_DELETE = "SensorDataDelete";
+
+        private const string SENSOR_DATA_LAST = "SensorDataLast";
+        private const string SENSOR_DATA_RECENT = "SensorDataRecent";
+        private const string SENSOR_DATA_CURRENT = "SensorDataCurrent";
+        private const string SENSOR_DATA_GRAPH = "SensorDataGraph";
 
         #endregion
 
@@ -76,6 +84,21 @@ namespace ArduinoMonitor.DataAccess
                 return null;
 
             return new Arduino(dt.Rows[0]);
+        }
+
+        public List<Arduino> GetArduinos()
+        {
+            List<SqlParameter> parameters = new List<SqlParameter>();
+
+            DataTable dt = RunDataTableProcedure(ARDUINOS_GET, parameters.ToArray());
+            
+            List<Arduino> data = new List<Arduino>();
+            foreach (DataRow row in dt.Rows)
+            {
+                data.Add(new Arduino(row));
+            }
+
+            return data;
         }
 
         public int InsertArduino(IEnumerable<SqlParameter> parameters)
@@ -109,6 +132,42 @@ namespace ArduinoMonitor.DataAccess
         #endregion
 
         #region Event Log
+
+        public List<Event> GetEventsLast(int? pCount = null)
+        {
+            List<SqlParameter> parameters = new List<SqlParameter>();
+
+            if (pCount != null)
+                parameters.Add(new SqlParameter("@Events", pCount));
+
+            DataTable dt = RunDataTableProcedure(EVENTS_LAST, parameters);
+
+            List<Event> data = new List<Event>();
+            foreach (DataRow row in dt.Rows)
+            {
+                data.Add(new Event(row));
+            }
+
+            return data;
+        }
+
+        public List<Event> GetEventsRecent(int? pMinutes = null)
+        {
+            List<SqlParameter> parameters = new List<SqlParameter>();
+
+            if (pMinutes != null)
+                parameters.Add(new SqlParameter("@Minutes", pMinutes));
+
+            DataTable dt = RunDataTableProcedure(EVENTS_RECENT, parameters);
+
+            List<Event> data = new List<Event>();
+            foreach (DataRow row in dt.Rows)
+            {
+                data.Add(new Event(row));
+            }
+
+            return data;
+        }
 
         public int InsertEvent(int pArduinoID, string pMessage, EventType? pType = null, bool pIsException = false, string pException = null, string pStackTrace = null, DateTime? pDate = null, string pSource = "ArduinoMonitor")
         {
@@ -150,10 +209,46 @@ namespace ArduinoMonitor.DataAccess
             if (pCount != null)
                 parameters.Add(new SqlParameter("@Points", pCount));
 
-            DataTable dt = RunDataTableProcedure("SensorDataLast", parameters);
+            DataTable dt = RunDataTableProcedure(SENSOR_DATA_LAST, parameters);
 
             List<SensorData> data = new List<SensorData>();
-            foreach(DataRow row in dt.Rows)
+            foreach (DataRow row in dt.Rows)
+            {
+                data.Add(new SensorData(row));
+            }
+
+            return data;
+        }
+
+        public List<SensorData> GetSensorDataRecent(int? pMinutes = null)
+        {
+            List<SqlParameter> parameters = new List<SqlParameter>();
+
+            if (pMinutes != null)
+                parameters.Add(new SqlParameter("@Minutes", pMinutes));
+
+            DataTable dt = RunDataTableProcedure(SENSOR_DATA_RECENT, parameters);
+
+            List<SensorData> data = new List<SensorData>();
+            foreach (DataRow row in dt.Rows)
+            {
+                data.Add(new SensorData(row));
+            }
+
+            return data;
+        }
+
+        public List<SensorData> GetSensorDataCurrent(int? pMinutes = null)
+        {
+            List<SqlParameter> parameters = new List<SqlParameter>();
+
+            if (pMinutes != null)
+                parameters.Add(new SqlParameter("@Minutes", pMinutes));
+
+            DataTable dt = RunDataTableProcedure(SENSOR_DATA_CURRENT, parameters);
+
+            List<SensorData> data = new List<SensorData>();
+            foreach (DataRow row in dt.Rows)
             {
                 data.Add(new SensorData(row));
             }

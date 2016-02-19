@@ -48,6 +48,7 @@
     <Compile Include="Objects\Arduino.cs" />
     <Compile Include="Objects\BaseObjectAudit.cs" />
     <Compile Include="Objects\BaseObject.cs" />
+    <Compile Include="Objects\Event.cs" />
     <Compile Include="Objects\SensorData.cs" />
     <Compile Include="Utilities\ApplicationInfo.cs" />
     <Compile Include="Utilities\Email.cs" />

@@ -21,11 +21,16 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a href="/" class="navbar-brand">Arduino Monitor</a>
+                <a href="/" class="navbar-brand"><img id="logo" src="@Url.Content("~/Content/Images/ArduinoMonitor.png")" alt="Arduino Monitor" /></a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Dashboard", "Dashboard", "Home", new { area = "" }, null)</li>
+                    <li>@Html.ActionLink("Current", "Current", "Home", new { area = "" }, null)</li>
+                    <li>@Html.ActionLink("Last", "Last", "Home", new { area = "" }, null)</li>
+                    <li>@Html.ActionLink("Most Recent", "Recent", "Home", new { area = "" }, null)</li>
+                    <li>@Html.ActionLink("Events", "EventLast", "Home", new { area = "" }, null)</li>
+                    @*<li>@Html.ActionLink("Events - Recent", "EventRecent", "Home", new { area = "" }, null)</li>*@
+                    <li>@Html.ActionLink("Arduinos", "Arduinos", "Home", new { area = "" }, null)</li>
                     <li>@Html.ActionLink("API", "API", "Home", new { area = "" }, null)</li>
                 </ul>
             </div>

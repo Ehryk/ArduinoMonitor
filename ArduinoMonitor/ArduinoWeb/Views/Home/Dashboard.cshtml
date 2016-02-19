@@ -52,6 +52,8 @@
     <script type="text/javascript">
         currentData = [];
         minutes = @ViewBag.Count;
+        timeBased = @ViewBag.TimeBased.ToString().ToLower();
+        api = '@Url.Content("~")' + '@ViewBag.ApiLink' + '/';
         legendLocked = false;
         lockedX = 0;
         updateLegendTimeout = null;
@@ -60,7 +62,7 @@
         function refreshData(min) {
             if (min !== undefined)
                 window.minutes = min;
-            datatable.ajax.url("/api/last/" + minutes);
+            datatable.ajax.url(api + minutes);
             datatable.ajax.reload();
             $("label#refreshTime").html(formatDate(new Date()));
         }
@@ -162,7 +164,7 @@
                     return;
 
                 var plotOffset = plot.getPlotOffset();
-            
+
                 ctx.save();
                 ctx.translate(plotOffset.left, plotOffset.top);
 
@@ -181,7 +183,7 @@
                 ctx.restore();
             });
         }
-        
+
         function updateLegend() {
             updateLegendTimeout = null;
             var pos = latestPosition;
@@ -244,8 +246,11 @@
                 .DataTable({
                     processing: true,
                     ajax: {
-                        url: "/api/last/" + minutes,
+                        url: api + minutes,
                         dataSrc: ""
+                    },    
+                    language: {
+                        infoEmpty: "No Sensor Data available"
                     },
                     columns: [
                         { data: 'ID', visible: false },
@@ -275,12 +280,24 @@
                     ],
                     order: [[2, "asc"]]
                 });
+            
+            //Add Buttons
             $('<button id="refresh" onclick="refreshData()" style="margin-left:20px" class="btn btn-primary btn-sm">Refresh</button>').appendTo('div.dataTables_length');
-            $('<button id="refresh1" onclick="refreshData(60)" style="margin-left:20px" class="btn btn-primary btn-sm">1 hour</button>').appendTo('div.dataTables_length');
-            $('<button id="refresh2" onclick="refreshData(120)" style="margin-left:20px" class="btn btn-primary btn-sm">2 hours</button>').appendTo('div.dataTables_length');
-            $('<button id="refresh6" onclick="refreshData(360)" style="margin-left:20px" class="btn btn-primary btn-sm">6 hours</button>').appendTo('div.dataTables_length');
-            $('<button id="refresh24" onclick="refreshData(1440)" style="margin-left:20px" class="btn btn-primary btn-sm">1 day</button>').appendTo('div.dataTables_length');
-            $('<button id="refresh48" onclick="refreshData(2880)" style="margin-left:20px" class="btn btn-primary btn-sm">2 days</button>').appendTo('div.dataTables_length');
+            if (timeBased == true) {
+                $('<button id="refresh1"  onclick="refreshData(60)"   style="margin-left:20px" class="btn btn-primary btn-sm">1 hour</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh2"  onclick="refreshData(120)"  style="margin-left:20px" class="btn btn-primary btn-sm">2 hours</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh6"  onclick="refreshData(360)"  style="margin-left:20px" class="btn btn-primary btn-sm">6 hours</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh24" onclick="refreshData(1440)" style="margin-left:20px" class="btn btn-primary btn-sm">1 day</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh48" onclick="refreshData(2880)" style="margin-left:20px" class="btn btn-primary btn-sm">2 days</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh48" onclick="refreshData(7 * 1440)" style="margin-left:20px" class="btn btn-primary btn-sm">1 week</button>').appendTo('div.dataTables_length');
+            } else {
+                $('<button id="refresh10"   onclick="refreshData(10)"    style="margin-left:20px" class="btn btn-primary btn-sm">Last 10</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh100"  onclick="refreshData(100)"   style="margin-left:20px" class="btn btn-primary btn-sm">Last 100</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh1000" onclick="refreshData(500)"   style="margin-left:20px" class="btn btn-primary btn-sm">Last 500</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh1000" onclick="refreshData(1000)"  style="margin-left:20px" class="btn btn-primary btn-sm">Last 1000</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh1000" onclick="refreshData(5000)"  style="margin-left:20px" class="btn btn-primary btn-sm">Last 5000</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh1000" onclick="refreshData(10000)" style="margin-left:20px" class="btn btn-primary btn-sm">Last 10000</button>').appendTo('div.dataTables_length');
+            }
         });
     </script>
 }

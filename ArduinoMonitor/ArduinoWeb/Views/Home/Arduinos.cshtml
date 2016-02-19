@@ -1,0 +1,11 @@
+﻿@using ArduinoWeb.Models
+@model ArduinosViewModel
+
+<div class="jumbotron">
+    <h2>Arduinos</h2>
+    <p style="font-size:18px;text-align:center;">These are the arduinos in the ArduinoMonitor network</p>
+</div>
+
+<section id="arduino-list">
+    @Html.DisplayFor(m => m.Arduinos)
+</section>

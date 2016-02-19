@@ -1,0 +1,127 @@
+﻿
+<section id="tabledata" style="padding-top:15px;">
+    <table id="events" class="display" style="width:100%;">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Arduino</th>
+                <th style="width:50px;">Elapsed Minutes</th>
+                <th style="width:70px;">Elapsed</th>
+                <th>Year</th>
+                <th style="width:120px;">Date</th>
+                <th>Source</th>
+                <th>Type</th>
+                <th>Message</th>
+                <th>Is Exception?</th>
+                <th>Exception</th>
+                <th>Stack Trace</th>
+                <th>Comments</th>
+                <th>Deleted</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+        </tfoot>
+    </table>
+</section>
+
+@section scripts {
+    <script type="text/javascript">
+        currentData = [];
+        minutes = @ViewBag.Count;
+        timeBased = @ViewBag.TimeBased.ToString().ToLower();
+        api = '@Url.Content("~")' + '@ViewBag.ApiLink' + '/';
+
+        function refreshData(min) {
+            if (min !== undefined)
+                window.minutes = min;
+            datatable.ajax.url(api + minutes);
+            datatable.ajax.reload();
+            $("label#refreshTime").html(formatDate(new Date()));
+        }
+
+        $(document).ready(function() {
+            datatable = $('#events')
+                .on('xhr.dt', function(e, settings, json, xhr) {
+                    currentData = json;
+                })
+                .DataTable({
+                    processing: true,
+                    ajax: {
+                        url: api + minutes,
+                        dataSrc: ""
+                    },
+                    columns: [
+                        { data: 'ID', visible: false },
+                        { data: 'ArduinoID', visible: false },
+                        { data: 'ElapsedMinutes', visible: false },
+                        { 
+                            data: 'ElapsedMinutes',
+                            render: function(data) { return formatMinutes(data); }
+                        },
+                        { data: 'Year', visible: false },
+                        {
+                            data: 'Date',
+                            render: function(data) { return formatDateNoYear(new Date(data + "Z").addHours(@ViewBag.TimeZoneOffset)); }
+                        },
+                        {
+                            data: 'Source',
+                            render: function(data) { return isNull(data) ? "--" : data; },
+                            visible: false
+                        },
+                        {
+                            data: 'Type',
+                            render: function(data) { return isNull(data) ? "--" : data; }
+                        },
+                        {
+                            data: 'Message',
+                            render: function(data) { return isNull(data) ? "--" : data; }
+                        },
+                        {
+                            data: 'IsException',
+                            render: function(data) { return data ? "Yes" : "No"; },
+                            visible: false
+                        },
+                        {
+                            data: 'Exception',
+                            render: function(data) { return isNull(data) ? "--" : data; }
+                        },
+                        {
+                            data: 'StackTrace',
+                            render: function(data) { return isNull(data) ? "--" : data; },
+                            visible: false
+                        },
+                        {
+                            data: 'Comment',
+                            render: function(data) { return isNull(data) ? "--" : data; },
+                            visible: false
+                        },
+                        {
+                            data: 'Deleted',
+                            render: function(data) { return data ? "Deleted" : ""; },
+                            visible: false
+                        }
+                    ],
+                    order: [[2, "asc"]]
+                });
+            
+            //Add Buttons
+            $('<button id="refresh" onclick="refreshData()" style="margin-left:20px" class="btn btn-primary btn-sm">Refresh</button>').appendTo('div.dataTables_length');
+            if (timeBased == true) {
+                $('<button id="refresh1"  onclick="refreshData(60)"   style="margin-left:20px" class="btn btn-primary btn-sm">1 hour</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh2"  onclick="refreshData(120)"  style="margin-left:20px" class="btn btn-primary btn-sm">2 hours</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh6"  onclick="refreshData(360)"  style="margin-left:20px" class="btn btn-primary btn-sm">6 hours</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh24" onclick="refreshData(1440)" style="margin-left:20px" class="btn btn-primary btn-sm">1 day</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh48" onclick="refreshData(2880)" style="margin-left:20px" class="btn btn-primary btn-sm">2 days</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh48" onclick="refreshData(7 * 1440)" style="margin-left:20px" class="btn btn-primary btn-sm">1 week</button>').appendTo('div.dataTables_length');
+            } else {
+                $('<button id="refresh10"   onclick="refreshData(10)"    style="margin-left:20px" class="btn btn-primary btn-sm">Last 10</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh100"  onclick="refreshData(100)"   style="margin-left:20px" class="btn btn-primary btn-sm">Last 100</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh1000" onclick="refreshData(500)"   style="margin-left:20px" class="btn btn-primary btn-sm">Last 500</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh1000" onclick="refreshData(1000)"  style="margin-left:20px" class="btn btn-primary btn-sm">Last 1000</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh1000" onclick="refreshData(5000)"  style="margin-left:20px" class="btn btn-primary btn-sm">Last 5000</button>').appendTo('div.dataTables_length');
+                $('<button id="refresh1000" onclick="refreshData(10000)" style="margin-left:20px" class="btn btn-primary btn-sm">Last 10000</button>').appendTo('div.dataTables_length');
+            }
+        });
+    </script>
+}

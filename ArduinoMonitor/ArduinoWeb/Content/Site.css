@@ -28,3 +28,9 @@ footer {
 h1, h2 {
     text-align: center;
 }
+
+#logo {
+    width:250px;
+    position:relative;
+    top:-10px;
+}

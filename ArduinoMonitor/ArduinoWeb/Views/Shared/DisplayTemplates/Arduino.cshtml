@@ -1,0 +1,11 @@
+﻿@using ArduinoMonitor.Objects;
+@model Arduino
+
+<h3>@Model.Name</h3>
+<div style="padding-left:15px;">
+    <div><b>ID:</b> @Model.ID</div>
+    <div><b>Build Date:</b> @Model.BuildDate.Value.ToString("yyyy.MM.dd")</div>
+    <div><b>Location:</b> @Model.Location</div>
+    <div><b>Sensors:</b> @Model.Sensors</div>
+    <div><b>Builder:</b> @Model.Builder</div>
+</div>

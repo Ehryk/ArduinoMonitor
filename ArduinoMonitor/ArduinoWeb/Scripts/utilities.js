@@ -74,6 +74,17 @@ function getTimezoneAbbreviation(date) {
     return "UTC";
 }
 
+function formatMinutes(mins) {
+    var days = parseInt(mins / 24 / 60);
+    var hours = parseInt((mins % (24 * 60)) / 60);
+    var minutes = mins % 60;
+    if (days == 0 && hours == 0)
+        return "{0}m".format(minutes);
+    if (days == 0)
+        return "{0}h {1}m".format(hours, minutes);
+    return "{0}d {1}h {2}m".format(days, hours, minutes);
+}
+
 function pad(n, width, z) {
     z = z || '0';
     n = n + '';
